@@ -163,66 +163,64 @@ const CartPanel = ({
           </span>
         </div>
 
-        <div className="d-grid gap-2">
-          <div className="row g-2">
-            <div className="col-4">
-              <Button
-                variant="warning"
-                size="sm"
-                className="w-100"
-                disabled={isEmpty}
-                onClick={onSave}
-              >
-                <FiSave className="d-none d-md-inline" /> Simpan
-              </Button>
-            </div>
-            <div className="col-4">
-              <Button
-                variant="info"
-                size="sm"
-                className="w-100"
-                disabled={isEmpty}
-                onClick={onPrintKitchen}
-              >
-                <FiPrinter className="d-none d-md-inline" /> Dapur
-              </Button>
-            </div>
-            <div className="col-4">
-              <Button
-                variant="secondary"
-                size="sm"
-                className="w-100"
-                disabled={isEmpty}
-                onClick={onPrintCheck}
-              >
-                <FiFileText className="d-none d-md-inline" /> Cek
-              </Button>
-            </div>
+        <div className="row g-2 mb-2">
+          <div className="col-4">
+            <Button
+              variant="warning"
+              size="sm"
+              className="w-100"
+              disabled={isEmpty}
+              onClick={onSave}
+            >
+              <FiSave className="d-none d-md-inline" /> Simpan
+            </Button>
           </div>
+          <div className="col-4">
+            <Button
+              variant="info"
+              size="sm"
+              className="w-100"
+              disabled={isEmpty}
+              onClick={onPrintKitchen}
+            >
+              <FiPrinter className="d-none d-md-inline" /> Dapur
+            </Button>
+          </div>
+          <div className="col-4">
+            <Button
+              variant="secondary"
+              size="sm"
+              className="w-100"
+              disabled={isEmpty}
+              onClick={onPrintCheck}
+            >
+              <FiFileText className="d-none d-md-inline" /> Cek
+            </Button>
+          </div>
+        </div>
 
-          <div className="row g-2">
-            <div className="col-6">
-              <Button
-                variant="danger"
-                size="sm"
-                className="w-100"
-                disabled={isEmpty}
-                onClick={onCancel}
-              >
-                <FiX /> Batal
-              </Button>
-            </div>
-            <div className="col-6">
-              <Button
-                variant="success"
-                size="sm"
-                className="w-100 fw-bold"
-                disabled={isEmpty}
-                onClick={onPay}
-              >
-                <FiDollarSign className="me-2" /> Bayar
-              </Button>
-            </div>
+        <div className="row g-2">
+          <div className="col-6">
+            <Button
+              variant="danger"
+              size="sm"
+              className="w-100"
+              disabled={isEmpty}
+              onClick={onCancel}
+            >
+              <FiX /> Batal
+            </Button>
+          </div>
+          <div className="col-6">
+            <Button
+              variant="success"
+              size="sm"
+              className="w-100 fw-bold"
+              disabled={isEmpty}
+              onClick={onPay}
+            >
+              <FiDollarSign className="me-2" /> Bayar
+            </Button>
           </div>
         </div>
       </div>
