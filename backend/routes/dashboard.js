@@ -1,19 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const { verifyToken } = require("../middleware/auth");
+const { authenticate } = require("../middleware/auth");
 const dashboardController = require("../controllers/dashboardController");
 
-// Debug logging for Render
-console.log("Dashboard controller loaded:", typeof dashboardController);
-console.log("Available methods:", Object.keys(dashboardController));
-console.log("getStats type:", typeof dashboardController.getStats);
-console.log("getStats value:", dashboardController.getStats);
-console.log("verifyToken type:", typeof verifyToken);
-console.log("verifyToken value:", verifyToken);
-
-router.get("/stats", verifyToken, dashboardController.getStats);
-router.get("/top-products", verifyToken, dashboardController.getTopProducts);
-router.get("/category-stats", verifyToken, dashboardController.getCategoryStats);
-router.get("/sales-trend", verifyToken, dashboardController.getSalesTrend);
+router.get("/stats", authenticate, dashboardController.getStats);
+router.get("/top-products", authenticate, dashboardController.getTopProducts);
+router.get("/category-stats", authenticate, dashboardController.getCategoryStats);
+router.get("/sales-trend", authenticate, dashboardController.getSalesTrend);
 
 module.exports = router;
