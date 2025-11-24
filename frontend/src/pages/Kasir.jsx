@@ -293,6 +293,38 @@ const Kasir = () => {
   const processPayment = async (paymentMethod, paidAmount) => {
     if (!shift) return;
 
+    // Check printer connection before payment
+    if (!bluetoothPrinter.isConnected()) {
+      const connectPrinter = window.confirm(
+        "Printer tidak terhubung.\n\nApakah Anda ingin menghubungkan printer sekarang?\n\n" +
+        "- Klik OK untuk menghubungkan printer\n" +
+        "- Klik Cancel untuk lanjut tanpa print (bisa print ulang dari Riwayat)"
+      );
+
+      if (connectPrinter) {
+        try {
+          const connectResult = await bluetoothPrinter.connect();
+          if (!connectResult.success) {
+            const proceed = window.confirm(
+              `Gagal menghubungkan printer: ${connectResult.error}\n\n` +
+              "Apakah Anda ingin melanjutkan pembayaran tanpa print?\n" +
+              "(Anda bisa print ulang dari menu Riwayat)"
+            );
+            if (!proceed) return;
+          } else {
+            alert(`Printer "${connectResult.deviceName}" berhasil terhubung!`);
+          }
+        } catch (connectError) {
+          const proceed = window.confirm(
+            `Error saat menghubungkan printer: ${connectError.message}\n\n` +
+            "Apakah Anda ingin melanjutkan pembayaran tanpa print?\n" +
+            "(Anda bisa print ulang dari menu Riwayat)"
+          );
+          if (!proceed) return;
+        }
+      }
+    }
+
     try {
       const response = await transactionService.create({
         shift_id: shift.id,
