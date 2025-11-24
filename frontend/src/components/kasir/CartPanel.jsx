@@ -161,7 +161,7 @@ const CartPanel = ({
 
         <div className="d-grid gap-2">
           <div className="row g-2">
-            <div className="col">
+            <div className="col-4">
               <Button
                 variant="warning"
                 size="sm"
@@ -169,10 +169,10 @@ const CartPanel = ({
                 disabled={isEmpty}
                 onClick={onSave}
               >
-                <FiSave /> Simpan
+                <FiSave className="d-none d-md-inline" /> Simpan
               </Button>
             </div>
-            <div className="col">
+            <div className="col-4">
               <Button
                 variant="info"
                 size="sm"
@@ -180,10 +180,10 @@ const CartPanel = ({
                 disabled={isEmpty}
                 onClick={onPrintKitchen}
               >
-                <FiPrinter /> Dapur
+                <FiPrinter className="d-none d-md-inline" /> Dapur
               </Button>
             </div>
-            <div className="col">
+            <div className="col-4">
               <Button
                 variant="secondary"
                 size="sm"
@@ -191,7 +191,7 @@ const CartPanel = ({
                 disabled={isEmpty}
                 onClick={onPrintCheck}
               >
-                <FiFileText /> Cek
+                <FiFileText className="d-none d-md-inline" /> Cek
               </Button>
             </div>
           </div>

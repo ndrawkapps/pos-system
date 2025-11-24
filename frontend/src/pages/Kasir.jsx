@@ -516,13 +516,7 @@ const Kasir = () => {
                   onCategoryChange={setSelectedCategory}
                   searchTerm={searchTerm}
                   onSearchChange={setSearchTerm}
-                  onProductClick={(product) => {
-                    addToCart(product);
-                    // Auto-switch to cart on mobile after adding item
-                    if (window.innerWidth < 992) {
-                      setShowCart(true);
-                    }
-                  }}
+                  onProductClick={addToCart}
                 />
               </Col>
 
