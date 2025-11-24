@@ -201,7 +201,7 @@ class BluetoothPrinter {
 
       // Items
       orderData.items.forEach((item) => {
-        const subtotal = item.price * item.quantity;
+        const subtotal = Math.round(item.price * item.quantity);
         let itemName = item.product_name || item.name;
         if (itemName.length > 20) itemName = itemName.substring(0, 20);
 
@@ -211,10 +211,10 @@ class BluetoothPrinter {
           receipt += "  >> " + item.item_note + this.LINE_FEED;
         }
 
-        const priceLine = `${item.quantity} x ${item.price.toLocaleString(
-          "id-ID"
+        const priceLine = `${item.quantity} x ${Math.round(item.price).toLocaleString(
+          "id-ID", { maximumFractionDigits: 0 }
         )}`;
-        const subtotalStr = subtotal.toLocaleString("id-ID");
+        const subtotalStr = subtotal.toLocaleString("id-ID", { maximumFractionDigits: 0 });
         const padding = " ".repeat(
           Math.max(0, 32 - priceLine.length - subtotalStr.length)
         );
@@ -225,7 +225,7 @@ class BluetoothPrinter {
 
       // Total
       const totalLabel = "TOTAL";
-      const totalValue = orderData.total.toLocaleString("id-ID");
+      const totalValue = Math.round(orderData.total).toLocaleString("id-ID", { maximumFractionDigits: 0 });
       const totalPadding = " ".repeat(
         Math.max(0, 32 - totalLabel.length - totalValue.length)
       );
@@ -243,16 +243,16 @@ class BluetoothPrinter {
 
       if (orderData.payment_method === "Tunai" && orderData.paid_amount) {
         const paidLabel = "Uang Diterima";
-        const paidValue = orderData.paid_amount.toLocaleString("id-ID");
+        const paidValue = Math.round(orderData.paid_amount).toLocaleString("id-ID", { maximumFractionDigits: 0 });
         const paidPadding = " ".repeat(
           Math.max(0, 32 - paidLabel.length - paidValue.length)
         );
         receipt += paidLabel + paidPadding + paidValue + this.LINE_FEED;
 
         const changeLabel = "Kembalian";
-        const changeValue = (
+        const changeValue = Math.round(
           orderData.paid_amount - orderData.total
-        ).toLocaleString("id-ID");
+        ).toLocaleString("id-ID", { maximumFractionDigits: 0 });
         const changePadding = " ".repeat(
           Math.max(0, 32 - changeLabel.length - changeValue.length)
         );
@@ -377,7 +377,7 @@ class BluetoothPrinter {
 
       // Items
       orderData.items.forEach((item) => {
-        const subtotal = item.price * item.quantity;
+        const subtotal = Math.round(item.price * item.quantity);
         let itemName = item.name;
         if (itemName.length > 20) itemName = itemName.substring(0, 20);
 
@@ -387,10 +387,10 @@ class BluetoothPrinter {
           bill += "  >> " + item.note + this.LINE_FEED;
         }
 
-        const priceLine = `${item.quantity} x ${item.price.toLocaleString(
-          "id-ID"
+        const priceLine = `${item.quantity} x ${Math.round(item.price).toLocaleString(
+          "id-ID", { maximumFractionDigits: 0 }
         )}`;
-        const subtotalStr = subtotal.toLocaleString("id-ID");
+        const subtotalStr = subtotal.toLocaleString("id-ID", { maximumFractionDigits: 0 });
         const padding = " ".repeat(
           Math.max(0, 32 - priceLine.length - subtotalStr.length)
         );
@@ -400,7 +400,7 @@ class BluetoothPrinter {
       bill += "--------------------------------" + this.LINE_FEED;
 
       const totalLabel = "TOTAL";
-      const totalValue = orderData.total.toLocaleString("id-ID");
+      const totalValue = Math.round(orderData.total).toLocaleString("id-ID", { maximumFractionDigits: 0 });
       const totalPadding = " ".repeat(
         Math.max(0, 32 - totalLabel.length - totalValue.length)
       );
