@@ -525,7 +525,7 @@ const Kasir = () => {
                 lg={5}
                 className={`${!showCart ? 'd-none d-lg-flex' : 'd-flex'}`}
                 style={{
-                  height: "100%",
+                  minHeight: "100%",
                   flexDirection: "column"
                 }}
               >
