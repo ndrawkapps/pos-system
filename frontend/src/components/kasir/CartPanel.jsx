@@ -43,7 +43,8 @@ const CartPanel = ({
       style={{ 
         backgroundColor: "#fff",
         height: "100%",
-        minHeight: 0
+        maxHeight: "100%",
+        overflow: "hidden"
       }}
     >
       <div className="p-3 border-bottom" style={{ flexShrink: 0 }}>
@@ -89,13 +90,21 @@ const CartPanel = ({
         />
       </div>
 
-      <div className="flex-grow-1 p-3" style={{ overflowY: "auto", minHeight: 0 }}>
-        {isEmpty ? (
-          <div className="text-center text-muted py-5">
-            Keranjang masih kosong
-          </div>
-        ) : (
-          cart.map((item) => (
+      <div 
+        className="flex-grow-1" 
+        style={{ 
+          overflowY: "auto", 
+          minHeight: 0,
+          flex: "1 1 auto"
+        }}
+      >
+        <div className="p-3">
+          {isEmpty ? (
+            <div className="text-center text-muted py-5">
+              Keranjang masih kosong
+            </div>
+          ) : (
+            cart.map((item) => (
             <div key={item.cartItemId} className="cart-item">
               <div className="cart-item-info">
                 <div className="fw-bold">{item.name}</div>
@@ -153,9 +162,16 @@ const CartPanel = ({
             </div>
           ))
         )}
+        </div>
       </div>
 
-      <div className="border-top p-2" style={{ flexShrink: 0 }}>
+      <div 
+        className="border-top p-2" 
+        style={{ 
+          flexShrink: 0,
+          flex: "0 0 auto"
+        }}
+      >
         <div className="d-flex justify-content-between align-items-center mb-2 px-1">
           <span className="small fw-bold">Total Bayar</span>
           <span className="h5 mb-0 text-primary fw-bold">
