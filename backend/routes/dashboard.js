@@ -8,6 +8,8 @@ console.log("Dashboard controller loaded:", typeof dashboardController);
 console.log("Available methods:", Object.keys(dashboardController));
 console.log("getStats type:", typeof dashboardController.getStats);
 console.log("getStats value:", dashboardController.getStats);
+console.log("verifyToken type:", typeof verifyToken);
+console.log("verifyToken value:", verifyToken);
 
 router.get("/stats", verifyToken, dashboardController.getStats);
 router.get("/top-products", verifyToken, dashboardController.getTopProducts);
