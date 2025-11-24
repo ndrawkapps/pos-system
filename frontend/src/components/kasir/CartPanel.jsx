@@ -155,22 +155,23 @@ const CartPanel = ({
         )}
       </div>
 
-      <div className="border-top p-3" style={{ flexShrink: 0 }}>
-        <div className="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
-          <span className="h6 mb-0">Total Bayar</span>
-          <span className="h4 mb-0 text-primary fw-bold">
+      <div className="border-top p-2" style={{ flexShrink: 0 }}>
+        <div className="d-flex justify-content-between align-items-center mb-2 px-1">
+          <span className="small fw-bold">Total Bayar</span>
+          <span className="h5 mb-0 text-primary fw-bold">
             {formatCurrency(total)}
           </span>
         </div>
 
-        <div className="row g-2 mb-2">
+        <div className="row g-1 mb-1">
           <div className="col-4">
             <Button
               variant="warning"
               size="sm"
-              className="w-100"
+              className="w-100 py-2"
               disabled={isEmpty}
               onClick={onSave}
+              style={{ fontSize: '0.8rem' }}
             >
               <FiSave className="d-none d-md-inline" /> Simpan
             </Button>
@@ -179,9 +180,10 @@ const CartPanel = ({
             <Button
               variant="info"
               size="sm"
-              className="w-100"
+              className="w-100 py-2"
               disabled={isEmpty}
               onClick={onPrintKitchen}
+              style={{ fontSize: '0.8rem' }}
             >
               <FiPrinter className="d-none d-md-inline" /> Dapur
             </Button>
@@ -190,23 +192,25 @@ const CartPanel = ({
             <Button
               variant="secondary"
               size="sm"
-              className="w-100"
+              className="w-100 py-2"
               disabled={isEmpty}
               onClick={onPrintCheck}
+              style={{ fontSize: '0.8rem' }}
             >
               <FiFileText className="d-none d-md-inline" /> Cek
             </Button>
           </div>
         </div>
 
-        <div className="row g-2">
+        <div className="row g-1">
           <div className="col-6">
             <Button
               variant="danger"
               size="sm"
-              className="w-100"
+              className="w-100 py-2"
               disabled={isEmpty}
               onClick={onCancel}
+              style={{ fontSize: '0.8rem' }}
             >
               <FiX /> Batal
             </Button>
@@ -215,11 +219,12 @@ const CartPanel = ({
             <Button
               variant="success"
               size="sm"
-              className="w-100 fw-bold"
+              className="w-100 py-2 fw-bold"
               disabled={isEmpty}
               onClick={onPay}
+              style={{ fontSize: '0.8rem' }}
             >
-              <FiDollarSign className="me-2" /> Bayar
+              <FiDollarSign className="me-1" /> Bayar
             </Button>
           </div>
         </div>
