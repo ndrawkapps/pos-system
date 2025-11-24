@@ -28,3 +28,4 @@ package-lock.json
 .cache/
 coverage/
 /.history/
+dump.sql
