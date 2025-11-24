@@ -28,6 +28,7 @@ const Kasir = () => {
   const [settings, setSettings] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showCart, setShowCart] = useState(false); // For mobile toggle
 
   // Modal states
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -479,11 +480,34 @@ const Kasir = () => {
               </Alert>
             )}
 
-            <Row className="g-0" style={{ height: "100%" }}>
+            {/* Mobile Toggle Button */}
+            <div className="d-lg-none p-2 border-bottom bg-light">
+              <Button
+                variant={showCart ? "primary" : "outline-primary"}
+                size="sm"
+                className="me-2"
+                onClick={() => setShowCart(true)}
+              >
+                Keranjang ({cart.length})
+              </Button>
+              <Button
+                variant={!showCart ? "primary" : "outline-primary"}
+                size="sm"
+                onClick={() => setShowCart(false)}
+              >
+                Menu
+              </Button>
+            </div>
+
+            <Row className="g-0 h-100">
               <Col
+                xs={12}
                 lg={7}
-                className="border-end"
-                style={{ height: "100%", overflowY: "auto" }}
+                className={`border-end ${showCart ? 'd-none d-lg-block' : 'd-block'}`}
+                style={{ 
+                  height: "100%", 
+                  overflowY: "auto"
+                }}
               >
                 <MenuPanel
                   products={filteredProducts}
@@ -492,16 +516,23 @@ const Kasir = () => {
                   onCategoryChange={setSelectedCategory}
                   searchTerm={searchTerm}
                   onSearchChange={setSearchTerm}
-                  onProductClick={addToCart}
+                  onProductClick={(product) => {
+                    addToCart(product);
+                    // Auto-switch to cart on mobile after adding item
+                    if (window.innerWidth < 992) {
+                      setShowCart(true);
+                    }
+                  }}
                 />
               </Col>
 
               <Col
+                xs={12}
                 lg={5}
+                className={`${!showCart ? 'd-none d-lg-flex' : 'd-flex'}`}
                 style={{
                   height: "100%",
-                  display: "flex",
-                  flexDirection: "column",
+                  flexDirection: "column"
                 }}
               >
                 <CartPanel
