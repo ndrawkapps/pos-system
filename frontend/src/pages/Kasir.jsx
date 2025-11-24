@@ -106,6 +106,11 @@ const Kasir = () => {
 
   useEffect(() => {
     loadInitialData();
+    
+    // Auto-reconnect to printer if previously paired
+    (async () => {
+      await bluetoothPrinter.autoReconnect();
+    })();
   }, [loadInitialData]);
 
   const handleOpenShift = async (modalAwal) => {

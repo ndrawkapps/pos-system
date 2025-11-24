@@ -15,6 +15,16 @@ const PrinterSettings = () => {
 
   useEffect(() => {
     checkConnection();
+    
+    // Try to auto-reconnect to previously paired device
+    (async () => {
+      const result = await bluetoothPrinter.autoReconnect();
+      if (result.success) {
+        setPrinterStatus({ connected: true, deviceName: result.deviceName });
+        setMessage({ type: 'success', text: `Auto-connected: ${result.deviceName}` });
+      }
+    })();
+
     // subscribe to device disconnects
     const onDisc = async (device) => {
       console.warn('Printer disconnected (UI):', device);
