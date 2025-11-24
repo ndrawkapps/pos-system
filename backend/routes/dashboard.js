@@ -3,11 +3,9 @@ const router = express.Router();
 const dashboardController = require("../controllers/dashboardController");
 const { verifyToken } = require("../middleware/auth");
 
-router.use(verifyToken);
-
-router.get("/stats", dashboardController.getStats);
-router.get("/top-products", dashboardController.getTopProducts);
-router.get("/category-stats", dashboardController.getCategoryStats);
-router.get("/sales-trend", dashboardController.getSalesTrend);
+router.get("/stats", verifyToken, dashboardController.getStats);
+router.get("/top-products", verifyToken, dashboardController.getTopProducts);
+router.get("/category-stats", verifyToken, dashboardController.getCategoryStats);
+router.get("/sales-trend", verifyToken, dashboardController.getSalesTrend);
 
 module.exports = router;
