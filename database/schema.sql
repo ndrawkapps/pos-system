@@ -104,6 +104,19 @@ CREATE TABLE cash_flows (
   FOREIGN KEY (shift_id) REFERENCES shifts(id)
 );
 
+-- Table: cash_flow_audit (records deletions/changes to cash flows)
+CREATE TABLE cash_flow_audit (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  cash_flow_id INT,
+  shift_id INT,
+  performed_by INT,
+  action VARCHAR(50),
+  type VARCHAR(10),
+  amount DECIMAL(15,2),
+  reason TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Table: held_orders
 CREATE TABLE held_orders (
   id INT AUTO_INCREMENT PRIMARY KEY,
