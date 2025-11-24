@@ -166,15 +166,17 @@ const CartPanel = ({
       </div>
 
       <div 
-        className="border-top p-2" 
+        className="border-top bg-white" 
         style={{ 
-          flexShrink: 0,
-          flex: "0 0 auto"
+          position: "sticky",
+          bottom: 0,
+          padding: "8px",
+          zIndex: 10
         }}
       >
-        <div className="d-flex justify-content-between align-items-center mb-2 px-1">
-          <span className="small fw-bold">Total Bayar</span>
-          <span className="h5 mb-0 text-primary fw-bold">
+        <div className="d-flex justify-content-between align-items-center mb-1 px-1">
+          <span className="small fw-bold">Total</span>
+          <span className="h6 mb-0 text-primary fw-bold">
             {formatCurrency(total)}
           </span>
         </div>
@@ -184,36 +186,36 @@ const CartPanel = ({
             <Button
               variant="warning"
               size="sm"
-              className="w-100 py-2"
+              className="w-100"
               disabled={isEmpty}
               onClick={onSave}
-              style={{ fontSize: '0.8rem' }}
+              style={{ fontSize: '0.75rem', padding: '6px 4px' }}
             >
-              <FiSave className="d-none d-md-inline" /> Simpan
+              Simpan
             </Button>
           </div>
           <div className="col-4">
             <Button
               variant="info"
               size="sm"
-              className="w-100 py-2"
+              className="w-100"
               disabled={isEmpty}
               onClick={onPrintKitchen}
-              style={{ fontSize: '0.8rem' }}
+              style={{ fontSize: '0.75rem', padding: '6px 4px' }}
             >
-              <FiPrinter className="d-none d-md-inline" /> Dapur
+              Dapur
             </Button>
           </div>
           <div className="col-4">
             <Button
               variant="secondary"
               size="sm"
-              className="w-100 py-2"
+              className="w-100"
               disabled={isEmpty}
               onClick={onPrintCheck}
-              style={{ fontSize: '0.8rem' }}
+              style={{ fontSize: '0.75rem', padding: '6px 4px' }}
             >
-              <FiFileText className="d-none d-md-inline" /> Cek
+              Cek
             </Button>
           </div>
         </div>
@@ -223,10 +225,10 @@ const CartPanel = ({
             <Button
               variant="danger"
               size="sm"
-              className="w-100 py-2"
+              className="w-100"
               disabled={isEmpty}
               onClick={onCancel}
-              style={{ fontSize: '0.8rem' }}
+              style={{ fontSize: '0.75rem', padding: '6px 4px' }}
             >
               <FiX /> Batal
             </Button>
@@ -235,10 +237,10 @@ const CartPanel = ({
             <Button
               variant="success"
               size="sm"
-              className="w-100 py-2 fw-bold"
+              className="w-100 fw-bold"
               disabled={isEmpty}
               onClick={onPay}
-              style={{ fontSize: '0.8rem' }}
+              style={{ fontSize: '0.75rem', padding: '6px 4px' }}
             >
               <FiDollarSign className="me-1" /> Bayar
             </Button>
