@@ -22,6 +22,7 @@ app.use("/api/roles", require("./routes/roles"));
 app.use("/api/settings", require("./routes/settings"));
 app.use("/api/shifts", require("./routes/shifts"));
 app.use("/api/transactions", require("./routes/transactions"));
+app.use("/api/dashboard", require("./routes/dashboard"));
 
 // Health
 app.get("/", (req, res) => {

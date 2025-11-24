@@ -2,6 +2,7 @@ import { Nav, Button } from "react-bootstrap";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import {
+  FiHome,
   FiShoppingCart,
   FiClock,
   FiBarChart2,
@@ -40,6 +41,12 @@ const Sidebar = () => {
   }, []);
 
   const menuItems = [
+    {
+      path: "/",
+      label: "Beranda",
+      icon: <FiHome />,
+      permission: "all",
+    },
     {
       path: "/kasir",
       label: "Kasir",

@@ -7,6 +7,7 @@ import {
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import Login from "./pages/Login";
+import Beranda from "./pages/Beranda";
 import Dashboard from "./pages/Dashboard";
 import Kasir from "./pages/Kasir";
 import Riwayat from "./pages/Riwayat";
@@ -26,6 +27,14 @@ function App() {
 
           <Route
             path="/"
+            element={
+              <ProtectedRoute>
+                <Beranda />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
             element={
               <ProtectedRoute>
                 <Dashboard />
