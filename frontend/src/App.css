@@ -1,0 +1,446 @@
+:root {
+  --primary-color: #4a90e2;
+  --secondary-color: #f5f7fa;
+  --success-color: #5cb85c;
+  --warning-color: #f0ad4e;
+  --danger-color: #d9534f;
+  --info-color: #5bc0de;
+  --text-color: #333;
+  --border-color: #dfe4ea;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--secondary-color);
+  color: var(--text-color);
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+
+.app-container {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.flex-1 {
+  flex: 1 1 auto;
+}
+
+/* Ensure direct flex children of .app-container expand and allow their children to scroll.
+   Also set min-height: 0 on flex containers so overflow children can shrink correctly. */
+.app-container > .d-flex {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.d-flex {
+  /* make sure nested flex containers can shrink and allow children scroll */
+  min-height: 0;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.content-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  background-color: var(--secondary-color);
+}
+
+/* Allow content wrapper to shrink inside flex layout so its own overflow works */
+.content-wrapper {
+  min-height: 0;
+}
+
+/* Sidebar responsive styles */
+.sidebar {
+  width: var(--sidebar-width, 250px);
+  transition: width 0.18s ease, transform 0.18s ease;
+}
+
+.sidebar.collapsed {
+  width: 72px;
+}
+
+.sidebar .label {
+  display: inline-block;
+}
+
+.sidebar.collapsed .label {
+  display: none;
+}
+
+/* Off-canvas for small screens */
+@media (max-width: 991px) {
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 56px; /* navbar height */
+    height: calc(100vh - 56px);
+    transform: translateX(-110%);
+    z-index: 1040;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  }
+
+  body.sidebar-open .sidebar {
+    transform: translateX(0);
+  }
+
+  /* dim background when sidebar is open */
+  body.sidebar-open::before {
+    content: '';
+    position: fixed;
+    inset: 56px 0 0 0;
+    background: rgba(0,0,0,0.25);
+    z-index: 1030;
+  }
+}
+
+/* Ensure sidebar buttons look nice */
+.sidebar .sidebar-top .btn {
+  border: none;
+}
+
+/* Pay button adjustments: keep small button sizing consistent with other actions */
+.btn-pay {
+  /* Use the same vertical sizing as Bootstrap's .btn-sm */
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+.btn-pay {
+  /* removed - legacy class; kept here temporarily in case other files reference it */
+  display: inline-block;
+}
+
+/* Custom scrollbar */
+.content-wrapper::-webkit-scrollbar {
+  width: 8px;
+}
+
+.content-wrapper::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.content-wrapper::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.content-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Bootstrap overrides */
+.btn-primary {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+}
+
+.btn-primary:hover {
+  background-color: #3a7bc8 !important;
+  border-color: #3a7bc8 !important;
+}
+
+.btn-success {
+  background-color: var(--success-color) !important;
+  border-color: var(--success-color) !important;
+}
+
+.btn-warning {
+  background-color: var(--warning-color) !important;
+  border-color: var(--warning-color) !important;
+}
+
+.btn-danger {
+  background-color: var(--danger-color) !important;
+  border-color: var(--danger-color) !important;
+}
+
+.text-primary {
+  color: var(--primary-color) !important;
+}
+
+.card {
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+}
+
+.card-header {
+  background-color: #fff;
+  border-bottom: 1px solid var(--border-color);
+  font-weight: 600;
+}
+
+/* Menu Grid */
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.menu-item {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 10px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 120px;
+}
+
+.menu-item:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  border-color: var(--primary-color);
+}
+
+.menu-item img {
+  width: 100%;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.menu-item-name {
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.3;
+  margin-bottom: 5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.menu-item-price {
+  color: var(--primary-color);
+  font-weight: bold;
+  font-size: 14px;
+}
+
+/* Cart Items */
+.cart-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.cart-item:last-child {
+  border-bottom: none;
+}
+
+.cart-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.cart-item-info .name {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.cart-item-info .price {
+  color: #777;
+  font-size: 13px;
+}
+
+.cart-item-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 10px;
+}
+
+.cart-item-controls button {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  background: var(--secondary-color);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.cart-item-controls button:hover {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.cart-item-controls .qty {
+  font-weight: bold;
+  min-width: 20px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.cart-item-total {
+  font-weight: bold;
+  min-width: 80px;
+  text-align: right;
+  font-size: 14px;
+}
+
+/* Tables */
+.table {
+  margin-bottom: 0;
+}
+
+.table thead th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  border-bottom: 2px solid var(--border-color);
+  font-size: 14px;
+  padding: 12px;
+}
+
+.table tbody td {
+  padding: 12px;
+  vertical-align: middle;
+}
+
+.table-hover tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+/* Badges */
+.badge {
+  padding: 0.35em 0.65em;
+  font-weight: 600;
+  font-size: 0.85em;
+}
+
+/* Loading Spinner */
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
+/* Form Controls */
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.2rem rgba(74, 144, 226, 0.25);
+}
+
+/* Alerts */
+.alert {
+  border-radius: 8px;
+  border: none;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .app-container {
+    flex-direction: column;
+  }
+
+  .menu-grid {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .content-wrapper {
+    padding: 15px;
+  }
+
+  .menu-grid {
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+    gap: 8px;
+  }
+
+  .menu-item {
+    min-height: 100px;
+    padding: 8px;
+  }
+
+  .menu-item-name {
+    font-size: 12px;
+  }
+
+  .menu-item-price {
+    font-size: 13px;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .app-container {
+    display: block;
+  }
+
+  .main-nav,
+  .sidebar,
+  .card-header,
+  button,
+  .btn {
+    display: none !important;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card {
+  animation: fadeIn 0.3s ease;
+}
+
+/* Custom Utilities */
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.text-truncate-2 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.shadow-sm-hover:hover {
+  box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.075) !important;
+  transition: box-shadow 0.15s ease-in-out;
+}
