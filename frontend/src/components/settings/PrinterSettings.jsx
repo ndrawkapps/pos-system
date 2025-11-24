@@ -18,10 +18,15 @@ const PrinterSettings = () => {
     
     // Try to auto-reconnect to previously paired device
     (async () => {
-      const result = await bluetoothPrinter.autoReconnect();
-      if (result.success) {
-        setPrinterStatus({ connected: true, deviceName: result.deviceName });
-        setMessage({ type: 'success', text: `Auto-connected: ${result.deviceName}` });
+      try {
+        const result = await bluetoothPrinter.autoReconnect();
+        if (result.success) {
+          setPrinterStatus({ connected: true, deviceName: result.deviceName });
+          setMessage({ type: 'success', text: `Auto-connected: ${result.deviceName}` });
+        }
+      } catch (error) {
+        // Silently fail - user can manually connect if needed
+        console.debug('Auto-reconnect skipped:', error.message);
       }
     })();
 

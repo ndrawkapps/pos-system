@@ -88,17 +88,19 @@ class BluetoothPrinter {
     
     try {
       // Use getDevices API if available (Chrome 85+)
-      if (navigator.bluetooth.getDevices) {
-        const devices = await navigator.bluetooth.getDevices();
-        if (devices.length > 0) {
-          // Try to reconnect to the first device (printer)
-          this.device = devices[0];
-          const result = await this.connect({ retries: 2 });
-          if (result.success) {
-            console.log("Auto-reconnected to printer:", this.device.name);
-          }
-          return result;
+      if (!navigator.bluetooth.getDevices) {
+        return { success: false, error: "getDevices API not available" };
+      }
+      
+      const devices = await navigator.bluetooth.getDevices();
+      if (devices.length > 0) {
+        // Try to reconnect to the first device (printer)
+        this.device = devices[0];
+        const result = await this.connect({ retries: 2 });
+        if (result.success) {
+          console.log("Auto-reconnected to printer:", this.device.name);
         }
+        return result;
       }
       return { success: false, error: "No previously paired devices" };
     } catch (error) {

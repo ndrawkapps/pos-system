@@ -109,7 +109,12 @@ const Kasir = () => {
     
     // Auto-reconnect to printer if previously paired
     (async () => {
-      await bluetoothPrinter.autoReconnect();
+      try {
+        await bluetoothPrinter.autoReconnect();
+      } catch (error) {
+        // Silently fail - user can manually connect from settings if needed
+        console.debug('Auto-reconnect skipped:', error.message);
+      }
     })();
   }, [loadInitialData]);
 
