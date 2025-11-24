@@ -239,7 +239,14 @@ class BluetoothPrinter {
       receipt += "ID Transaksi: #" + (orderData.id || "N/A") + this.LINE_FEED;
       receipt +=
         "Waktu: " +
-        new Date(orderData.created_at).toLocaleString("id-ID") +
+        new Date(orderData.created_at).toLocaleString("id-ID", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false
+        }) +
         this.LINE_FEED;
 
       if (orderData.transaction_note) {
@@ -357,7 +364,14 @@ class BluetoothPrinter {
         slip += "Meja/Order: " + orderData.table_number + this.LINE_FEED;
       }
 
-      slip += new Date().toLocaleString("id-ID") + this.LINE_FEED;
+      slip += new Date().toLocaleString("id-ID", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
+      }) + this.LINE_FEED;
 
       if (orderData.transaction_note) {
         slip += "--------------------------------" + this.LINE_FEED;
@@ -432,7 +446,14 @@ class BluetoothPrinter {
       bill += "--------------------------------" + this.LINE_FEED;
       bill += this.ALIGN_LEFT;
       bill += "ID Transaksi: #" + (orderData.id || "N/A") + this.LINE_FEED;
-      bill += "Waktu: " + new Date().toLocaleString("id-ID") + this.LINE_FEED;
+      bill += "Waktu: " + new Date().toLocaleString("id-ID", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
+      }) + this.LINE_FEED;
 
       if (orderData.transaction_note) {
         bill += "Catatan: " + orderData.transaction_note + this.LINE_FEED;
