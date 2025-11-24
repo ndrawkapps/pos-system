@@ -170,9 +170,9 @@ exports.getShiftSummary = async (req, res) => {
       [shift_id]
     );
 
-    // Get cash flows
+    // Get cash flows (include id so frontend can reference/delete entries)
     const [cashFlows] = await pool.query(
-      `SELECT type, name, amount, created_at
+      `SELECT id, type, name, amount, created_at
        FROM cash_flows
        WHERE shift_id = ?
        ORDER BY created_at ASC`,
@@ -242,6 +242,99 @@ exports.addCashFlow = async (req, res) => {
   } catch (error) {
     await conn.rollback();
     console.error('Add cash flow error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  } finally {
+    conn.release();
+  }
+};
+
+exports.deleteCashFlow = async (req, res) => {
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    const cashFlowId = req.params.id;
+    const user_id = req.user.id;
+
+    // Fetch cash flow
+    const [rows] = await conn.query(
+      'SELECT id, shift_id, type, amount FROM cash_flows WHERE id = ?',
+      [cashFlowId]
+    );
+
+    if (rows.length === 0) {
+      await conn.rollback();
+      return res.status(404).json({ success: false, message: 'Cash flow not found' });
+    }
+
+    const cashFlow = rows[0];
+
+    // Verify shift belongs to the authenticated user
+    const [shifts] = await conn.query('SELECT id, user_id, expected_cash, cash_in, cash_out FROM shifts WHERE id = ?', [cashFlow.shift_id]);
+    if (shifts.length === 0) {
+      await conn.rollback();
+      return res.status(404).json({ success: false, message: 'Shift not found' });
+    }
+
+    const shift = shifts[0];
+    if (shift.user_id !== user_id) {
+      await conn.rollback();
+      return res.status(403).json({ success: false, message: 'Not authorized to modify this cash flow' });
+    }
+
+    const amount = Number(cashFlow.amount) || 0;
+
+    // Delete the cash flow
+    await conn.query('DELETE FROM cash_flows WHERE id = ?', [cashFlowId]);
+
+    // Reverse the cash flow effect on the shift
+    let expectedChange = 0;
+    let cashInChange = 0;
+    let cashOutChange = 0;
+
+    if (cashFlow.type === 'in') {
+      expectedChange = -amount;
+      cashInChange = -amount;
+    } else if (cashFlow.type === 'out') {
+      expectedChange = amount;
+      cashOutChange = -amount;
+    }
+
+    await conn.query(
+      `UPDATE shifts SET expected_cash = expected_cash + ?,
+         cash_in = GREATEST(0, cash_in + ?),
+         cash_out = GREATEST(0, cash_out + ?)
+       WHERE id = ?`,
+      [expectedChange, cashInChange, cashOutChange, cashFlow.shift_id]
+    );
+
+    // Insert into audit table for traceability. Create table if not exists.
+    await conn.query(
+      `CREATE TABLE IF NOT EXISTS cash_flow_audit (
+         id INT AUTO_INCREMENT PRIMARY KEY,
+         cash_flow_id INT,
+         shift_id INT,
+         performed_by INT,
+         action VARCHAR(50),
+         type VARCHAR(10),
+         amount DECIMAL(15,2),
+         reason TEXT,
+         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`
+    );
+
+    await conn.query(
+      `INSERT INTO cash_flow_audit (cash_flow_id, shift_id, performed_by, action, type, amount)
+       VALUES (?, ?, ?, 'delete', ?, ?)`,
+      [cashFlowId, cashFlow.shift_id, user_id, cashFlow.type, amount]
+    );
+
+    await conn.commit();
+
+    res.json({ success: true, message: 'Cash flow deleted successfully' });
+  } catch (error) {
+    await conn.rollback();
+    console.error('Delete cash flow error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   } finally {
     conn.release();
