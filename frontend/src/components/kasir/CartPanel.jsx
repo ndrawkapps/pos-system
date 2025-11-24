@@ -39,10 +39,14 @@ const CartPanel = ({
 
   return (
     <div
-      className="d-flex flex-column h-100"
-      style={{ backgroundColor: "#fff" }}
+      className="d-flex flex-column"
+      style={{ 
+        backgroundColor: "#fff",
+        height: "100%",
+        minHeight: 0
+      }}
     >
-      <div className="p-3 border-bottom">
+      <div className="p-3 border-bottom" style={{ flexShrink: 0 }}>
         <div className="d-flex justify-content-between align-items-center mb-2">
           <h5 className="mb-0">Keranjang</h5>
           <Button variant="warning" size="sm" onClick={onShowHeld}>
@@ -85,7 +89,7 @@ const CartPanel = ({
         />
       </div>
 
-      <div className="flex-grow-1 p-3" style={{ overflowY: "auto" }}>
+      <div className="flex-grow-1 p-3" style={{ overflowY: "auto", minHeight: 0 }}>
         {isEmpty ? (
           <div className="text-center text-muted py-5">
             Keranjang masih kosong
@@ -151,7 +155,7 @@ const CartPanel = ({
         )}
       </div>
 
-      <div className="border-top p-3">
+      <div className="border-top p-3" style={{ flexShrink: 0 }}>
         <div className="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
           <span className="h6 mb-0">Total Bayar</span>
           <span className="h4 mb-0 text-primary fw-bold">
