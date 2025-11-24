@@ -187,6 +187,7 @@ class BluetoothPrinter {
 
       // Transaction info
       receipt += this.ALIGN_LEFT;
+      receipt += "ID Transaksi: #" + orderData.id + this.LINE_FEED;
       receipt +=
         "Waktu: " +
         new Date(orderData.created_at).toLocaleString("id-ID") +
@@ -293,6 +294,8 @@ class BluetoothPrinter {
         this.BOLD_OFF +
         this.LINE_FEED;
 
+      slip += "ID Transaksi: #" + orderData.id + this.LINE_FEED;
+
       if (orderData.table_number) {
         slip += "Meja/Order: " + orderData.table_number + this.LINE_FEED;
       }
@@ -363,6 +366,7 @@ class BluetoothPrinter {
       bill += (settings.address_line2 || "Dalung Permai") + this.LINE_FEED;
       bill += "--------------------------------" + this.LINE_FEED;
       bill += this.ALIGN_LEFT;
+      bill += "ID Transaksi: #" + orderData.id + this.LINE_FEED;
       bill += "Waktu: " + new Date().toLocaleString("id-ID") + this.LINE_FEED;
 
       if (orderData.transaction_note) {

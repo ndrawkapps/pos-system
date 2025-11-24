@@ -120,53 +120,95 @@ const Riwayat = () => {
     }
   };
 
-  const handleExportExcel = () => {
+  const handleExportExcel = async () => {
     if (filteredTransactions.length === 0) {
       alert("Tidak ada data untuk diekspor");
       return;
     }
 
-    const headers = [
-      "ID",
-      "Tanggal",
-      "Waktu",
-      "Tipe",
-      "No Meja",
-      "Metode Bayar",
-      "Total",
-      "Kasir",
-    ];
-    const rows = filteredTransactions.map((t) => {
-      const date = new Date(t.created_at);
-      return [
-        t.id,
-        date.toLocaleDateString("id-ID"),
-        date.toLocaleTimeString("id-ID"),
-        t.order_type,
-        t.table_number || "-",
-        t.payment_method,
-        t.total,
-        t.kasir_name,
+    setLoading(true);
+    try {
+      // fetch full details for each transaction so we have items
+      const detailsPromises = filteredTransactions.map(async (t) => {
+        try {
+          const res = await transactionService.getById(t.id);
+          return res.data.data;
+        } catch (err) {
+          // fallback to summary object if detail call fails
+          return { ...t, items: t.items || [] };
+        }
+      });
+
+      const detailedTx = await Promise.all(detailsPromises);
+
+      // Desired CSV format: one row per item with order-level fields repeated
+      const headers = [
+        "ID Pesanan",
+        "Tanggal",
+        "Waktu",
+        "Tipe Pesanan",
+        "No Meja/Order",
+        "Metode Pembayaran",
+        "Nama Menu",
+        "QTY",
+        "Harga Satuan",
+        "Subtotal",
+        "Total Pesanan",
       ];
-    });
 
-    const csvContent = [
-      headers.join(","),
-      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(",")),
-    ].join("\n");
+      const csvLines = [];
+      csvLines.push(headers.join(","));
 
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute(
-      "download",
-      `riwayat_transaksi_${new Date().toISOString().split("T")[0]}.csv`
-    );
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      detailedTx.forEach((t) => {
+        const date = new Date(t.created_at);
+        const dateStr = date.toLocaleDateString("id-ID");
+        const timeStr = date
+          .toLocaleTimeString("id-ID", { hour12: false })
+          .replace(/:/g, ".");
+
+        const totalPesanan = Math.round(parseFloat(t.total) || 0);
+
+        (t.items || []).forEach((item) => {
+          const harga = Math.round(parseFloat(item.price) || 0);
+          const subtotal = Math.round(parseFloat(item.subtotal) || 0);
+
+          const row = [
+            `${t.id}`,
+            dateStr,
+            timeStr,
+            t.order_type,
+            t.table_number || "",
+            t.payment_method,
+            item.product_name,
+            `${item.quantity}`,
+            `${harga}`,
+            `${subtotal}`,
+            `${totalPesanan}`,
+          ];
+
+          csvLines.push(row.map((c) => `"${c}"`).join(","));
+        });
+      });
+
+      const csvContent = csvLines.join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute(
+        "download",
+        `detail_penjualan_shift_${new Date().toISOString().split("T")[0]}.csv`
+      );
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("Export error:", error);
+      alert("Terjadi kesalahan saat mengekspor. Coba lagi.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const totalAmount = filteredTransactions.reduce(
@@ -199,32 +241,47 @@ const Riwayat = () => {
 
               <Card className="mb-4">
                 <Card.Body>
-                  <Row className="g-3">
-                    <Col md={2}>
+                  <Row className="g-2 align-items-center flex-wrap">
+                    <Col xs="auto" className="me-2 mb-2 mb-sm-0">
                       <Button
                         variant={
                           filterType === "today" ? "primary" : "outline-primary"
                         }
-                        className="w-100"
+                        className="px-3"
+                        size="sm"
                         onClick={() => setFilterType("today")}
                       >
                         Hari Ini
                       </Button>
                     </Col>
-                    <Col md={2}>
+                    <Col xs="auto" className="me-2 mb-2 mb-sm-0">
                       <Button
                         variant={
                           filterType === "this_month"
                             ? "primary"
                             : "outline-primary"
                         }
-                        className="w-100"
+                        className="px-3"
+                        size="sm"
                         onClick={() => setFilterType("this_month")}
                       >
                         Bulan Ini
                       </Button>
                     </Col>
-                    <Col md={3}>
+                    <Col xs="auto" className="me-2 mb-2 mb-sm-0">
+                      <Button
+                        variant={
+                          filterType === "all" ? "primary" : "outline-primary"
+                        }
+                        className="px-3"
+                        size="sm"
+                        onClick={() => setFilterType("all")}
+                      >
+                        Semua
+                      </Button>
+                    </Col>
+
+                    <Col xs={12} sm={6} md={3} className="mb-2 mb-md-0">
                       <Form.Control
                         type="date"
                         value={startDate}
@@ -234,7 +291,8 @@ const Riwayat = () => {
                         }}
                       />
                     </Col>
-                    <Col md={3}>
+
+                    <Col xs={12} sm={6} md={3} className="mb-2 mb-md-0">
                       <Form.Control
                         type="date"
                         value={endDate}
@@ -244,28 +302,18 @@ const Riwayat = () => {
                         }}
                       />
                     </Col>
-                    <Col md={2}>
-                      <Button
-                        variant={
-                          filterType === "all" ? "primary" : "outline-primary"
-                        }
-                        className="w-100"
-                        onClick={() => setFilterType("all")}
-                      >
-                        Semua
+
+                    <Col xs="auto" className="text-end ms-auto">
+                      <Button variant="success" onClick={handleExportExcel} size="sm">
+                        <FiDownload className="me-2" /> Export Excel
                       </Button>
                     </Col>
                   </Row>
                   <Row className="mt-3">
-                    <Col>
-                      <Button variant="success" onClick={handleExportExcel}>
-                        <FiDownload className="me-2" />
-                        Export Excel
-                      </Button>
-                    </Col>
+                    <Col />
                     <Col className="text-end">
                       <h5>
-                        Total:{" "}
+                        Total: {" "}
                         <span className="text-primary">
                           {formatCurrency(totalAmount)}
                         </span>
@@ -359,6 +407,11 @@ const Riwayat = () => {
         <Modal.Body>
           {selectedTransaction && (
             <>
+              <Row className="mb-3">
+                <Col md={12}>
+                  <strong>ID Transaksi:</strong> #{selectedTransaction.id}
+                </Col>
+              </Row>
               <Row className="mb-3">
                 <Col md={6}>
                   <strong>Tanggal:</strong>{" "}

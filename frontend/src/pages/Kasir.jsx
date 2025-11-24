@@ -306,9 +306,9 @@ const Kasir = () => {
 
       const changeAmount = paidAmount - calculateTotal();
       if (paymentMethod === "Tunai") {
-        alert(`Pembayaran Tunai berhasil!\nKembalian: ${formatCurrency(changeAmount)}`);
+        alert(`Pembayaran Tunai berhasil!\nID Transaksi: #${transactionData.id}\nKembalian: ${formatCurrency(changeAmount)}`);
       } else {
-        alert(`Pembayaran ${paymentMethod} berhasil!`);
+        alert(`Pembayaran ${paymentMethod} berhasil!\nID Transaksi: #${transactionData.id}`);
       }
 
       resetOrder();
