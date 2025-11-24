@@ -96,15 +96,25 @@ class BluetoothPrinter {
       if (devices.length > 0) {
         // Try to reconnect to the first device (printer)
         this.device = devices[0];
-        const result = await this.connect({ retries: 2 });
-        if (result.success) {
-          console.log("Auto-reconnected to printer:", this.device.name);
+        
+        // Only reconnect if device exists, don't call requestDevice
+        if (this.device && this.device.gatt) {
+          try {
+            const server = await this.device.gatt.connect();
+            const service = await server.getPrimaryService("000018f0-0000-1000-8000-00805f9b34fb");
+            this.characteristic = await service.getCharacteristic("00002af1-0000-1000-8000-00805f9b34fb");
+            this._attachDisconnectHandler();
+            console.log("Auto-reconnected to printer:", this.device.name);
+            return { success: true, deviceName: this.device.name };
+          } catch (err) {
+            console.debug("Auto-reconnect failed:", err.message);
+            return { success: false, error: err.message };
+          }
         }
-        return result;
       }
       return { success: false, error: "No previously paired devices" };
     } catch (error) {
-      console.warn("Auto-reconnect failed:", error);
+      console.debug("Auto-reconnect error:", error);
       return { success: false, error: error.message };
     }
   }
