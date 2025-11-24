@@ -14,7 +14,7 @@ import Sidebar from "../components/common/Sidebar";
 import CloseShiftModal from "../components/kasir/CloseShiftModal";
 import api from "../services/api";
 import { formatCurrency, formatDateTime } from "../utils/formatters";
-import { FiDollarSign, FiTrendingUp, FiTrendingDown } from "react-icons/fi";
+import { FiDollarSign, FiTrendingUp, FiTrendingDown, FiTrash2 } from "react-icons/fi";
 
 const Summary = () => {
   const [shift, setShift] = useState(null);
@@ -99,6 +99,17 @@ const Summary = () => {
     }
   };
 
+  const handleDeleteCashFlow = async (id) => {
+    if (!confirm('Hapus cash flow ini? Tindakan ini tidak bisa dibatalkan.')) return;
+    try {
+      await api.delete(`/shifts/cash-flow/${id}`);
+      loadData();
+    } catch (error) {
+      console.error('Delete cash flow error:', error);
+      alert('Gagal menghapus cash flow');
+    }
+  };
+
   if (loading) {
     return (
       <div
@@ -131,6 +142,19 @@ const Summary = () => {
   }
 
   const totalLaci = summary.shift.expected_cash;
+  // Compute total omzet safely: prefer summing the payments array,
+  // fallback to numeric fields on the shift object if present.
+  const totalOmzet = (() => {
+    if (Array.isArray(summary.payments) && summary.payments.length > 0) {
+      return summary.payments.reduce((sum, p) => {
+        const val = Number(p.total);
+        return sum + (isNaN(val) ? 0 : val);
+      }, 0);
+    }
+    const cash = Number(summary.shift.total_cash) || 0;
+    const nonCash = Number(summary.shift.total_non_cash) || 0;
+    return cash + nonCash;
+  })();
 
   return (
     <div className="app-container">
@@ -212,10 +236,7 @@ const Summary = () => {
                           <ListGroup.Item className="d-flex justify-content-between bg-light">
                             <span className="fw-bold">Total Omzet</span>
                             <strong className="text-primary">
-                              {formatCurrency(
-                                summary.shift.total_cash +
-                                  summary.shift.total_non_cash
-                              )}
+                              {formatCurrency(totalOmzet)}
                             </strong>
                           </ListGroup.Item>
                         </ListGroup>
@@ -263,16 +284,26 @@ const Summary = () => {
                                     {formatDateTime(cf.created_at)}
                                   </small>
                                 </div>
-                                <strong
-                                  className={
-                                    cf.type === "in"
-                                      ? "text-success"
-                                      : "text-danger"
-                                  }
-                                >
-                                  {cf.type === "in" ? "+" : "-"}{" "}
-                                  {formatCurrency(cf.amount)}
-                                </strong>
+                                <div className="d-flex align-items-center gap-2">
+                                  <strong
+                                    className={
+                                      cf.type === "in"
+                                        ? "text-success"
+                                        : "text-danger"
+                                    }
+                                  >
+                                    {cf.type === "in" ? "+" : "-"} {" "}
+                                    {formatCurrency(cf.amount)}
+                                  </strong>
+                                  <Button
+                                    variant="link"
+                                    size="sm"
+                                    className="text-danger"
+                                    onClick={() => handleDeleteCashFlow(cf.id)}
+                                  >
+                                    <FiTrash2 />
+                                  </Button>
+                                </div>
                               </div>
                             </ListGroup.Item>
                           ))
