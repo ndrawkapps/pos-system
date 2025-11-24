@@ -312,7 +312,17 @@ const Kasir = () => {
         created_at: new Date(),
       };
 
-      await bluetoothPrinter.printReceipt(transactionData, settings);
+      // Try to print receipt, but don't fail transaction if print fails
+      try {
+        const printResult = await bluetoothPrinter.printReceipt(transactionData, settings);
+        if (!printResult.success) {
+          console.warn("Print failed:", printResult.error);
+          alert(`Transaksi berhasil, tapi gagal print: ${printResult.error}\n\nSilakan print ulang dari Riwayat.`);
+        }
+      } catch (printError) {
+        console.error("Print error:", printError);
+        alert(`Transaksi berhasil, tapi gagal print: ${printError.message}\n\nSilakan print ulang dari Riwayat.`);
+      }
 
       const changeAmount = paidAmount - calculateTotal();
       if (paymentMethod === "Tunai") {

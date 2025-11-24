@@ -112,11 +112,13 @@ const Riwayat = () => {
         settings
       );
       if (!result.success) {
-        alert("Gagal mencetak: " + result.error);
+        alert(`Gagal mencetak: ${result.error}\n\nPastikan printer terhubung di halaman Settings.`);
+      } else {
+        alert("Berhasil mencetak ulang!");
       }
     } catch (error) {
       console.error("Reprint error:", error);
-      alert("Gagal mencetak ulang");
+      alert(`Gagal mencetak ulang: ${error.message}\n\nPastikan printer terhubung di halaman Settings.`);
     }
   };
 
