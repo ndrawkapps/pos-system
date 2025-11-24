@@ -1,4 +1,5 @@
 import { Form, InputGroup, Button } from "react-bootstrap";
+import { formatCurrency } from "../../utils/formatters";
 import { FiSearch } from "react-icons/fi";
 
 const MenuPanel = ({
@@ -69,9 +70,7 @@ const MenuPanel = ({
                 />
               )}
               <div className="menu-item-name">{product.name}</div>
-              <div className="menu-item-price">
-                Rp {product.price.toLocaleString("id-ID")}
-              </div>
+              <div className="menu-item-price">{formatCurrency(product.price)}</div>
             </div>
           ))
         )}

@@ -4,6 +4,7 @@ import Navbar from "../components/common/Navbar";
 import Sidebar from "../components/common/Sidebar";
 import MenuPanel from "../components/kasir/MenuPanel";
 import CartPanel from "../components/kasir/CartPanel";
+import { formatCurrency } from "../utils/formatters";
 import PaymentModal from "../components/kasir/PaymentModal";
 import CashPaymentModal from "../components/kasir/CashPaymentModal";
 import HeldOrdersModal from "../components/kasir/HeldOrdersModal";
@@ -305,11 +306,7 @@ const Kasir = () => {
 
       const changeAmount = paidAmount - calculateTotal();
       if (paymentMethod === "Tunai") {
-        alert(
-          `Pembayaran Tunai berhasil!\nKembalian: Rp ${changeAmount.toLocaleString(
-            "id-ID"
-          )}`
-        );
+        alert(`Pembayaran Tunai berhasil!\nKembalian: ${formatCurrency(changeAmount)}`);
       } else {
         alert(`Pembayaran ${paymentMethod} berhasil!`);
       }
