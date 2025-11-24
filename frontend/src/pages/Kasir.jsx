@@ -396,7 +396,7 @@ const Kasir = () => {
 
       const transactionData = {
         ...response.data.data,
-        id: response.data.data.id, // Ensure ID is explicitly set
+        id: response.data.data.transaction_id || response.data.data.id, // Use transaction_id from API response
         items: cart,
         payment_method: paymentMethod,
         transaction_note: transactionNote,
