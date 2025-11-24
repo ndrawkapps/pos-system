@@ -235,31 +235,89 @@ const Kasir = () => {
   const handlePrintKitchen = async () => {
     if (cart.length === 0) return;
 
+    // Check printer connection
+    if (!bluetoothPrinter.isConnected()) {
+      const connectPrinter = window.confirm(
+        "Printer tidak terhubung.\n\nApakah Anda ingin menghubungkan printer sekarang?"
+      );
+
+      if (connectPrinter) {
+        try {
+          const connectResult = await bluetoothPrinter.connect();
+          if (!connectResult.success) {
+            alert(`Gagal menghubungkan printer: ${connectResult.error}`);
+            return;
+          }
+          alert(`Printer "${connectResult.deviceName}" berhasil terhubung!`);
+        } catch (connectError) {
+          alert(`Error saat menghubungkan printer: ${connectError.message}`);
+          return;
+        }
+      } else {
+        return;
+      }
+    }
+
     const orderData = {
       items: cart,
       order_type: orderType,
       table_number: tableNumber,
       transaction_note: transactionNote,
+      id: Date.now(), // temporary ID for kitchen slip
     };
 
-    const result = await bluetoothPrinter.printKitchenSlip(orderData, settings);
-    if (!result.success) {
-      alert("Gagal mencetak: " + result.error);
+    try {
+      const result = await bluetoothPrinter.printKitchenSlip(orderData, settings);
+      if (!result.success) {
+        alert("Gagal mencetak: " + result.error);
+      }
+    } catch (error) {
+      console.debug("Print kitchen slip error:", error);
+      alert(`Gagal mencetak: ${error.message}\n\nPastikan printer terhubung di halaman Settings.`);
     }
   };
 
   const handlePrintCheck = async () => {
     if (cart.length === 0) return;
 
+    // Check printer connection
+    if (!bluetoothPrinter.isConnected()) {
+      const connectPrinter = window.confirm(
+        "Printer tidak terhubung.\n\nApakah Anda ingin menghubungkan printer sekarang?"
+      );
+
+      if (connectPrinter) {
+        try {
+          const connectResult = await bluetoothPrinter.connect();
+          if (!connectResult.success) {
+            alert(`Gagal menghubungkan printer: ${connectResult.error}`);
+            return;
+          }
+          alert(`Printer "${connectResult.deviceName}" berhasil terhubung!`);
+        } catch (connectError) {
+          alert(`Error saat menghubungkan printer: ${connectError.message}`);
+          return;
+        }
+      } else {
+        return;
+      }
+    }
+
     const orderData = {
       items: cart,
       total: calculateTotal(),
       transaction_note: transactionNote,
+      id: Date.now(), // temporary ID for check bill
     };
 
-    const result = await bluetoothPrinter.printCheckBill(orderData, settings);
-    if (!result.success) {
-      alert("Gagal mencetak: " + result.error);
+    try {
+      const result = await bluetoothPrinter.printCheckBill(orderData, settings);
+      if (!result.success) {
+        alert("Gagal mencetak: " + result.error);
+      }
+    } catch (error) {
+      console.debug("Print check bill error:", error);
+      alert(`Gagal mencetak: ${error.message}\n\nPastikan printer terhubung di halaman Settings.`);
     }
   };
 
