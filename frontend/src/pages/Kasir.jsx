@@ -320,7 +320,7 @@ const Kasir = () => {
           alert(`Transaksi berhasil, tapi gagal print: ${printResult.error}\n\nSilakan print ulang dari Riwayat.`);
         }
       } catch (printError) {
-        console.error("Print error:", printError);
+        console.debug("Print error:", printError);
         alert(`Transaksi berhasil, tapi gagal print: ${printError.message}\n\nSilakan print ulang dari Riwayat.`);
       }
 

@@ -176,11 +176,15 @@ class BluetoothPrinter {
 
   // Check if connected
   isConnected() {
-    return this.device && this.device.gatt && this.device.gatt.connected;
+    return this.device && this.device.gatt && this.device.gatt.connected && this.characteristic;
   }
 
   // Send data to printer
   async sendData(text) {
+    if (!this.characteristic) {
+      throw new Error("Printer characteristic not available");
+    }
+    
     if (!this.isConnected()) {
       throw new Error("Printer tidak terhubung");
     }
@@ -198,6 +202,14 @@ class BluetoothPrinter {
 
   // Print receipt
   async printReceipt(orderData, settings = {}) {
+    if (!this.characteristic) {
+      throw new Error("Printer characteristic not available");
+    }
+    
+    if (!this.isConnected()) {
+      throw new Error("Printer tidak terhubung");
+    }
+    
     try {
       let receipt = this.INIT; // Initialize
 
@@ -306,6 +318,14 @@ class BluetoothPrinter {
 
   // Print kitchen slip
   async printKitchenSlip(orderData, settings = {}) {
+    if (!this.characteristic) {
+      throw new Error("Printer characteristic not available");
+    }
+    
+    if (!this.isConnected()) {
+      throw new Error("Printer tidak terhubung");
+    }
+    
     try {
       let slip = this.INIT;
       const appName = settings.app_name || "Kedai Luwih99";
@@ -370,6 +390,14 @@ class BluetoothPrinter {
 
   // Print check bill
   async printCheckBill(orderData, settings = {}) {
+    if (!this.characteristic) {
+      throw new Error("Printer characteristic not available");
+    }
+    
+    if (!this.isConnected()) {
+      throw new Error("Printer tidak terhubung");
+    }
+    
     try {
       let bill = this.INIT;
 
