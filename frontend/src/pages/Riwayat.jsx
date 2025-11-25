@@ -348,7 +348,12 @@ const Riwayat = () => {
                       </Button>
                     </Col>
                   </Row>
-                  <Row className="mt-3">
+                </Card.Body>
+              </Card>
+
+              <Card>
+                <Card.Body>
+                  <Row className="mb-3">
                     <Col />
                     <Col className="text-end">
                       <h5>
@@ -359,11 +364,6 @@ const Riwayat = () => {
                       </h5>
                     </Col>
                   </Row>
-                </Card.Body>
-              </Card>
-
-              <Card>
-                <Card.Body>
                   {filteredTransactions.length === 0 ? (
                     <div className="text-center text-muted py-5">
                       Tidak ada transaksi untuk filter ini
