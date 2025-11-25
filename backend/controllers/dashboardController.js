@@ -44,6 +44,7 @@ exports.getStats = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to get statistics",
+      error: error.message,
     });
   }
 };
@@ -82,6 +83,7 @@ exports.getTopProducts = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to get top products",
+      error: error.message,
     });
   }
 };
@@ -114,6 +116,7 @@ exports.getCategoryStats = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to get category statistics",
+      error: error.message,
     });
   }
 };
@@ -176,6 +179,7 @@ exports.getSalesTrend = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to get sales trend",
+      error: error.message,
     });
   }
 };
