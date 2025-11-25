@@ -114,12 +114,6 @@ const Login = () => {
                   )}
                 </Button>
               </Form>
-
-              <div className="text-center mt-4">
-                <small className="text-muted">
-                  Demo: admin / admin123 atau kasir / kasir123
-                </small>
-              </div>
             </Card.Body>
           </Card>
 
