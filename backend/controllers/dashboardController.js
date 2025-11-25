@@ -213,3 +213,73 @@ exports.getSalesTrend = async (req, res) => {
     });
   }
 };
+
+// Get available months with sales data
+exports.getAvailableMonths = async (req, res) => {
+  try {
+    const [months] = await pool.query(
+      `SELECT DISTINCT 
+        DATE_FORMAT(created_at, '%Y-%m') as month,
+        DATE_FORMAT(created_at, '%M %Y') as label
+      FROM transactions
+      ORDER BY month DESC
+      LIMIT 12`
+    );
+
+    res.json({
+      success: true,
+      data: months,
+    });
+  } catch (error) {
+    console.error("Get available months error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get available months",
+      error: error.message,
+    });
+  }
+};
+
+// Get sales comparison by user
+exports.getSalesByUser = async (req, res) => {
+  try {
+    const { month } = req.query; // Format: YYYY-MM
+    
+    if (!month) {
+      return res.status(400).json({
+        success: false,
+        message: "Month parameter is required (format: YYYY-MM)",
+      });
+    }
+
+    const [salesByUser] = await pool.query(
+      `SELECT 
+        u.full_name as name,
+        COUNT(t.id) as orders,
+        COALESCE(SUM(t.total), 0) as totalSales
+      FROM users u
+      LEFT JOIN transactions t ON u.id = t.user_id 
+        AND DATE_FORMAT(t.created_at, '%Y-%m') = ?
+      WHERE u.is_active = 1
+      GROUP BY u.id, u.full_name
+      ORDER BY totalSales DESC`,
+      [month]
+    );
+
+    res.json({
+      success: true,
+      data: salesByUser.map(u => ({
+        name: u.name,
+        orders: parseInt(u.orders),
+        totalSales: parseFloat(u.totalSales),
+      })),
+    });
+  } catch (error) {
+    console.error("Get sales by user error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get sales by user",
+      error: error.message,
+    });
+  }
+};
