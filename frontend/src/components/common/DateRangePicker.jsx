@@ -31,24 +31,9 @@ const DateRangePicker = ({ startDate, endDate, onChange, placeholder = "Pilih Pe
       case 'today':
         onChange([today, today]);
         break;
-      case 'yesterday':
-        const yesterday = new Date(today);
-        yesterday.setDate(yesterday.getDate() - 1);
-        onChange([yesterday, yesterday]);
-        break;
-      case 'this_week':
-        const startOfWeek = new Date(today);
-        startOfWeek.setDate(today.getDate() - today.getDay());
-        onChange([startOfWeek, today]);
-        break;
       case 'this_month':
         const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
         onChange([startOfMonth, today]);
-        break;
-      case 'last_month':
-        const startLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-        const endLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
-        onChange([startLastMonth, endLastMonth]);
         break;
       case 'all':
         onChange([null, null]);
@@ -63,21 +48,8 @@ const DateRangePicker = ({ startDate, endDate, onChange, placeholder = "Pilih Pe
         <Button variant="outline-primary" onClick={() => setQuickDateRange('today')}>
           Hari Ini
         </Button>
-        <Button variant="outline-primary" onClick={() => setQuickDateRange('yesterday')}>
-          Kemarin
-        </Button>
-      </ButtonGroup>
-      <ButtonGroup size="sm" className="w-100 mb-2">
-        <Button variant="outline-primary" onClick={() => setQuickDateRange('this_week')}>
-          Minggu Ini
-        </Button>
         <Button variant="outline-primary" onClick={() => setQuickDateRange('this_month')}>
           Bulan Ini
-        </Button>
-      </ButtonGroup>
-      <ButtonGroup size="sm" className="w-100 mb-2">
-        <Button variant="outline-primary" onClick={() => setQuickDateRange('last_month')}>
-          Bulan Lalu
         </Button>
         <Button variant="outline-secondary" onClick={() => setQuickDateRange('all')}>
           Semua
