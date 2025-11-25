@@ -12,6 +12,7 @@ import {
 } from "react-bootstrap";
 import Navbar from "../components/common/Navbar";
 import Sidebar from "../components/common/Sidebar";
+import DateRangePicker from "../components/common/DateRangePicker";
 import transactionService from "../services/transactionService";
 import settingService from "../services/settingService";
 import bluetoothPrinter from "../utils/bluetooth";
@@ -21,9 +22,7 @@ import { FiDownload, FiPrinter, FiEye } from "react-icons/fi";
 const Riwayat = () => {
   const [transactions, setTransactions] = useState([]);
   const [filteredTransactions, setFilteredTransactions] = useState([]);
-  const [filterType, setFilterType] = useState("today");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [dateRange, setDateRange] = useState([new Date(), new Date()]);
   const [orderTypeFilter, setOrderTypeFilter] = useState("all");
   const [paymentMethodFilter, setPaymentMethodFilter] = useState("all");
   const [selectedTransaction, setSelectedTransaction] = useState(null);
@@ -50,37 +49,31 @@ const Riwayat = () => {
 
   // Apply filter dengan useCallback
   const applyFilter = useCallback(() => {
-    const now = new Date();
     let filtered = [...transactions];
 
-    // Filter by date
-    switch (filterType) {
-      case "today":
-        filtered = transactions.filter((t) => {
-          const date = new Date(t.created_at);
-          return date.toDateString() === now.toDateString();
-        });
-        break;
-      case "this_month":
-        filtered = transactions.filter((t) => {
-          const date = new Date(t.created_at);
-          return (
-            date.getMonth() === now.getMonth() &&
-            date.getFullYear() === now.getFullYear()
-          );
-        });
-        break;
-      case "date_range":
-        if (startDate && endDate) {
-          filtered = transactions.filter((t) => {
-            const date = new Date(t.created_at).toISOString().split("T")[0];
-            return date >= startDate && date <= endDate;
-          });
+    // Filter by date range
+    if (dateRange[0] || dateRange[1]) {
+      filtered = filtered.filter((t) => {
+        const tDate = new Date(t.created_at);
+        tDate.setHours(0, 0, 0, 0);
+        
+        if (dateRange[0] && dateRange[1]) {
+          const start = new Date(dateRange[0]);
+          start.setHours(0, 0, 0, 0);
+          const end = new Date(dateRange[1]);
+          end.setHours(23, 59, 59, 999);
+          return tDate >= start && tDate <= end;
+        } else if (dateRange[0]) {
+          const start = new Date(dateRange[0]);
+          start.setHours(0, 0, 0, 0);
+          return tDate >= start;
+        } else if (dateRange[1]) {
+          const end = new Date(dateRange[1]);
+          end.setHours(23, 59, 59, 999);
+          return tDate <= end;
         }
-        break;
-      case "all":
-      default:
-        break;
+        return true;
+      });
     }
 
     // Filter by order type
@@ -94,7 +87,7 @@ const Riwayat = () => {
     }
 
     setFilteredTransactions(filtered);
-  }, [filterType, transactions, startDate, endDate, orderTypeFilter, paymentMethodFilter]);
+  }, [dateRange, transactions, orderTypeFilter, paymentMethodFilter]);
 
   // Load initial data
   useEffect(() => {
@@ -105,53 +98,6 @@ const Riwayat = () => {
   useEffect(() => {
     applyFilter();
   }, [applyFilter]);
-
-  // Helper function to set quick date ranges
-  const setQuickDateRange = (type) => {
-    const now = new Date();
-    const today = now.toISOString().split('T')[0];
-    
-    switch (type) {
-      case 'today':
-        setStartDate(today);
-        setEndDate(today);
-        setFilterType('date_range');
-        break;
-      case 'yesterday':
-        const yesterday = new Date(now);
-        yesterday.setDate(yesterday.getDate() - 1);
-        const yesterdayStr = yesterday.toISOString().split('T')[0];
-        setStartDate(yesterdayStr);
-        setEndDate(yesterdayStr);
-        setFilterType('date_range');
-        break;
-      case 'this_week':
-        const startOfWeek = new Date(now);
-        startOfWeek.setDate(now.getDate() - now.getDay());
-        setStartDate(startOfWeek.toISOString().split('T')[0]);
-        setEndDate(today);
-        setFilterType('date_range');
-        break;
-      case 'this_month':
-        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        setStartDate(startOfMonth.toISOString().split('T')[0]);
-        setEndDate(today);
-        setFilterType('date_range');
-        break;
-      case 'last_month':
-        const startLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-        const endLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
-        setStartDate(startLastMonth.toISOString().split('T')[0]);
-        setEndDate(endLastMonth.toISOString().split('T')[0]);
-        setFilterType('date_range');
-        break;
-      case 'all':
-        setStartDate('');
-        setEndDate('');
-        setFilterType('all');
-        break;
-    }
-  };
 
   const handleShowDetail = async (transaction) => {
     try {
@@ -303,83 +249,13 @@ const Riwayat = () => {
 
               <Card className="mb-4">
                 <Card.Body>
-                  {/* Quick Date Range Buttons */}
-                  <Row className="mb-3">
-                    <Col>
-                      <div className="d-flex gap-2 flex-wrap">
-                        <Button
-                          size="sm"
-                          variant="outline-primary"
-                          onClick={() => setQuickDateRange('today')}
-                        >
-                          Hari Ini
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline-primary"
-                          onClick={() => setQuickDateRange('yesterday')}
-                        >
-                          Kemarin
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline-primary"
-                          onClick={() => setQuickDateRange('this_week')}
-                        >
-                          Minggu Ini
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline-primary"
-                          onClick={() => setQuickDateRange('this_month')}
-                        >
-                          Bulan Ini
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline-primary"
-                          onClick={() => setQuickDateRange('last_month')}
-                        >
-                          Bulan Lalu
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline-secondary"
-                          onClick={() => setQuickDateRange('all')}
-                        >
-                          Semua
-                        </Button>
-                      </div>
-                    </Col>
-                  </Row>
-
-                  {/* Date Range Inputs and Filters */}
                   <Row className="g-2 align-items-center flex-wrap">
                     <Col xs={12} sm={6} md="auto" className="mb-2 mb-md-0">
-                      <Form.Control
-                        type="date"
-                        size="sm"
-                        value={startDate}
-                        onChange={(e) => {
-                          setStartDate(e.target.value);
-                          setFilterType('date_range');
-                        }}
-                        placeholder="Dari"
-                        style={{ minWidth: "150px" }}
-                      />
-                    </Col>
-
-                    <Col xs={12} sm={6} md="auto" className="mb-2 mb-md-0">
-                      <Form.Control
-                        type="date"
-                        size="sm"
-                        value={endDate}
-                        onChange={(e) => {
-                          setEndDate(e.target.value);
-                          setFilterType('date_range');
-                        }}
-                        placeholder="Sampai"
-                        style={{ minWidth: "150px" }}
+                      <DateRangePicker
+                        startDate={dateRange[0]}
+                        endDate={dateRange[1]}
+                        onChange={(dates) => setDateRange(dates || [null, null])}
+                        placeholder="Pilih Periode"
                       />
                     </Col>
 
