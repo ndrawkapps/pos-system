@@ -257,66 +257,43 @@ const Riwayat = () => {
               <Card className="mb-4">
                 <Card.Body>
                   <Row className="g-2 align-items-center flex-wrap">
-                    <Col xs="auto" className="me-2 mb-2 mb-sm-0">
-                      <Button
-                        variant={
-                          filterType === "today" ? "primary" : "outline-primary"
-                        }
-                        className="px-3"
+                    <Col xs={12} sm={6} md="auto" className="mb-2 mb-md-0">
+                      <Form.Select
                         size="sm"
-                        onClick={() => setFilterType("today")}
+                        value={filterType}
+                        onChange={(e) => setFilterType(e.target.value)}
+                        style={{ minWidth: "150px" }}
                       >
-                        Hari Ini
-                      </Button>
-                    </Col>
-                    <Col xs="auto" className="me-2 mb-2 mb-sm-0">
-                      <Button
-                        variant={
-                          filterType === "this_month"
-                            ? "primary"
-                            : "outline-primary"
-                        }
-                        className="px-3"
-                        size="sm"
-                        onClick={() => setFilterType("this_month")}
-                      >
-                        Bulan Ini
-                      </Button>
-                    </Col>
-                    <Col xs="auto" className="me-2 mb-2 mb-sm-0">
-                      <Button
-                        variant={
-                          filterType === "all" ? "primary" : "outline-primary"
-                        }
-                        className="px-3"
-                        size="sm"
-                        onClick={() => setFilterType("all")}
-                      >
-                        Semua
-                      </Button>
+                        <option value="today">Hari Ini</option>
+                        <option value="this_month">Bulan Ini</option>
+                        <option value="date_range">Pilih Tanggal</option>
+                        <option value="all">Semua Periode</option>
+                      </Form.Select>
                     </Col>
 
-                    <Col xs={12} sm={6} md={3} className="mb-2 mb-md-0">
-                      <Form.Control
-                        type="date"
-                        value={startDate}
-                        onChange={(e) => {
-                          setStartDate(e.target.value);
-                          setFilterType("date_range");
-                        }}
-                      />
-                    </Col>
+                    {filterType === "date_range" && (
+                      <>
+                        <Col xs={12} sm={6} md="auto" className="mb-2 mb-md-0">
+                          <Form.Control
+                            type="date"
+                            size="sm"
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                            placeholder="Dari"
+                          />
+                        </Col>
 
-                    <Col xs={12} sm={6} md={3} className="mb-2 mb-md-0">
-                      <Form.Control
-                        type="date"
-                        value={endDate}
-                        onChange={(e) => {
-                          setEndDate(e.target.value);
-                          setFilterType("date_range");
-                        }}
-                      />
-                    </Col>
+                        <Col xs={12} sm={6} md="auto" className="mb-2 mb-md-0">
+                          <Form.Control
+                            type="date"
+                            size="sm"
+                            value={endDate}
+                            onChange={(e) => setEndDate(e.target.value)}
+                            placeholder="Sampai"
+                          />
+                        </Col>
+                      </>
+                    )}
 
                     <Col xs={12} sm={6} md="auto" className="mb-2 mb-md-0">
                       <Form.Select
