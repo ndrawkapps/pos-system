@@ -308,3 +308,159 @@ exports.getSalesByUser = async (req, res) => {
     });
   }
 };
+
+// Get sales heat map (day x hour)
+exports.getSalesHeatMap = async (req, res) => {
+  try {
+    const { period = '30' } = req.query; // 7, 30, 90 days
+    
+    const days = parseInt(period);
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    // Get sales data grouped by day of week and hour
+    const [heatMapData] = await pool.query(
+      `SELECT 
+        DAYOFWEEK(created_at) as dayOfWeek,
+        HOUR(created_at) as hour,
+        COUNT(*) as transactions,
+        COALESCE(SUM(total), 0) as totalSales
+      FROM transactions
+      WHERE created_at >= ?
+      GROUP BY DAYOFWEEK(created_at), HOUR(created_at)
+      ORDER BY dayOfWeek, hour`,
+      [startDate]
+    );
+
+    // Transform to matrix format [day][hour]
+    const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    const heatMap = [];
+
+    // Initialize matrix
+    for (let day = 0; day < 7; day++) {
+      heatMap[day] = {
+        day: dayNames[day],
+        hours: Array(24).fill(0).map((_, hour) => ({
+          hour,
+          transactions: 0,
+          totalSales: 0
+        }))
+      };
+    }
+
+    // Fill with data
+    heatMapData.forEach(row => {
+      const dayIndex = row.dayOfWeek - 1; // MySQL DAYOFWEEK is 1-7 (Sunday=1)
+      const hourIndex = row.hour;
+      heatMap[dayIndex].hours[hourIndex] = {
+        hour: hourIndex,
+        transactions: parseInt(row.transactions),
+        totalSales: parseFloat(row.totalSales)
+      };
+    });
+
+    res.json({
+      success: true,
+      data: heatMap,
+    });
+  } catch (error) {
+    console.error("Get sales heat map error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get sales heat map",
+      error: error.message,
+    });
+  }
+};
+
+// Get sales heat map (day x hour)
+exports.getSalesHeatMap = async (req, res) => {
+  try {
+    const { period = '30' } = req.query; // days to analyze, default 30
+    const days = parseInt(period);
+
+    // Get sales data grouped by day of week and hour
+    const [heatmapData] = await pool.query(
+      `SELECT 
+        DAYOFWEEK(created_at) as dayOfWeek,
+        HOUR(created_at) as hour,
+        COUNT(id) as transactionCount,
+        COALESCE(SUM(total), 0) as totalSales
+      FROM transactions
+      WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+      GROUP BY DAYOFWEEK(created_at), HOUR(created_at)
+      ORDER BY dayOfWeek, hour`,
+      [days]
+    );
+
+    // Transform data into matrix format for heatmap
+    // Days: 1=Minggu, 2=Senin, ..., 7=Sabtu
+    const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    
+    // Initialize matrix with zeros
+    const matrix = Array(7).fill(null).map(() => Array(24).fill(0));
+    const countMatrix = Array(7).fill(null).map(() => Array(24).fill(0));
+    
+    // Fill matrix with actual data
+    heatmapData.forEach(row => {
+      const dayIndex = row.dayOfWeek - 1; // Convert to 0-indexed
+      const hour = row.hour;
+      matrix[dayIndex][hour] = parseFloat(row.totalSales);
+      countMatrix[dayIndex][hour] = parseInt(row.transactionCount);
+    });
+
+    // Format for frontend consumption
+    const formattedData = [];
+    for (let day = 0; day < 7; day++) {
+      for (let hour = 0; hour < 24; hour++) {
+        formattedData.push({
+          day: dayNames[day],
+          dayIndex: day,
+          hour: hour,
+          hourLabel: `${hour.toString().padStart(2, '0')}:00`,
+          sales: matrix[day][hour],
+          transactionCount: countMatrix[day][hour],
+        });
+      }
+    }
+
+    // Calculate summary statistics
+    const totalSales = heatmapData.reduce((sum, row) => sum + parseFloat(row.totalSales), 0);
+    const totalTransactions = heatmapData.reduce((sum, row) => sum + parseInt(row.transactionCount), 0);
+    
+    // Find peak hour
+    let peakHour = null;
+    let maxSales = 0;
+    heatmapData.forEach(row => {
+      if (parseFloat(row.totalSales) > maxSales) {
+        maxSales = parseFloat(row.totalSales);
+        peakHour = {
+          day: dayNames[row.dayOfWeek - 1],
+          hour: row.hour,
+          sales: maxSales,
+          transactionCount: parseInt(row.transactionCount),
+        };
+      }
+    });
+
+    res.json({
+      success: true,
+      data: {
+        heatmap: formattedData,
+        summary: {
+          totalSales,
+          totalTransactions,
+          peakHour,
+          period: days,
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Get sales heatmap error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get sales heatmap",
+      error: error.message,
+    });
+  }
+};

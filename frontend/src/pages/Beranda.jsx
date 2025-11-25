@@ -30,6 +30,7 @@ import {
 } from "recharts";
 import Navbar from "../components/common/Navbar";
 import Sidebar from "../components/common/Sidebar";
+import SalesHeatMap from "../components/dashboard/SalesHeatMap";
 import api from "../services/api";
 import { formatCurrency } from "../utils/formatters";
 
@@ -439,6 +440,13 @@ const Beranda = () => {
                     </Col>
                   ))
                 )}
+              </Row>
+
+              {/* Heat Map */}
+              <Row className="g-3 mb-4">
+                <Col xs={12}>
+                  <SalesHeatMap />
+                </Col>
               </Row>
             </Container>
           </div>
