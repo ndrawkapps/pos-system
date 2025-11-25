@@ -209,10 +209,10 @@ const Beranda = () => {
                 </Col>
               </Row>
 
-              {/* Charts Row */}
+              {/* Charts Row - Tren Penjualan & Perbandingan User */}
               <Row className="g-3 mb-4">
-                <Col xs={12}>
-                  <Card className="border-0 shadow-sm">
+                <Col xs={12} lg={6}>
+                  <Card className="h-100 border-0 shadow-sm">
                     <Card.Body>
                       <div className="d-flex justify-content-between align-items-center mb-3">
                         <h5 className="mb-0">Tren Penjualan</h5>
@@ -246,6 +246,60 @@ const Beranda = () => {
                           />
                         </LineChart>
                       </ResponsiveContainer>
+                    </Card.Body>
+                  </Card>
+                </Col>
+
+                <Col xs={12} lg={6}>
+                  <Card className="h-100 border-0 shadow-sm">
+                    <Card.Body>
+                      <div className="d-flex justify-content-between align-items-center mb-3">
+                        <h5 className="mb-0">Perbandingan per User</h5>
+                        <Form.Select
+                          size="sm"
+                          style={{ width: "160px" }}
+                          value={selectedMonth}
+                          onChange={(e) => setSelectedMonth(e.target.value)}
+                        >
+                          {availableMonths.map((month) => (
+                            <option key={month.month} value={month.month}>
+                              {month.label}
+                            </option>
+                          ))}
+                        </Form.Select>
+                      </div>
+                      {salesByUser.length === 0 ? (
+                        <div className="text-center text-muted py-5">
+                          Tidak ada data
+                        </div>
+                      ) : (
+                        <ResponsiveContainer width="100%" height={300}>
+                          <BarChart 
+                            data={salesByUser} 
+                            margin={{ bottom: 60, left: 20, right: 20 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis 
+                              dataKey="name" 
+                              angle={-45}
+                              textAnchor="end"
+                              height={80}
+                              style={{ fontSize: '11px' }}
+                            />
+                            <YAxis />
+                            <Tooltip
+                              formatter={(value, name) => {
+                                if (name === "Jumlah Order") return `${value} order`;
+                                if (name === "Total Penjualan") return formatCurrency(value);
+                                return value;
+                              }}
+                            />
+                            <Legend />
+                            <Bar dataKey="orders" fill="#00C49F" name="Jumlah Order" />
+                            <Bar dataKey="totalSales" fill="#0088FE" name="Total Penjualan" />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      )}
                     </Card.Body>
                   </Card>
                 </Col>
@@ -343,63 +397,6 @@ const Beranda = () => {
                     </Col>
                   ))
                 )}
-              </Row>
-
-              {/* Sales Comparison by User */}
-              <Row className="g-3 mt-3">
-                <Col xs={12}>
-                  <Card className="border-0 shadow-sm">
-                    <Card.Body>
-                      <div className="d-flex justify-content-between align-items-center mb-3">
-                        <h5 className="mb-0">Perbandingan Penjualan per User</h5>
-                        <Form.Select
-                          size="sm"
-                          style={{ width: "200px" }}
-                          value={selectedMonth}
-                          onChange={(e) => setSelectedMonth(e.target.value)}
-                        >
-                          {availableMonths.map((month) => (
-                            <option key={month.month} value={month.month}>
-                              {month.label}
-                            </option>
-                          ))}
-                        </Form.Select>
-                      </div>
-                      {salesByUser.length === 0 ? (
-                        <div className="text-center text-muted py-5">
-                          Tidak ada data penjualan untuk bulan ini
-                        </div>
-                      ) : (
-                        <ResponsiveContainer width="100%" height={400}>
-                          <BarChart 
-                            data={salesByUser} 
-                            margin={{ bottom: 60, left: 20, right: 20 }}
-                          >
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis 
-                              dataKey="name" 
-                              angle={-45}
-                              textAnchor="end"
-                              height={80}
-                              style={{ fontSize: '12px' }}
-                            />
-                            <YAxis />
-                            <Tooltip
-                              formatter={(value, name) => {
-                                if (name === "Jumlah Order") return `${value} order`;
-                                if (name === "Total Penjualan") return formatCurrency(value);
-                                return value;
-                              }}
-                            />
-                            <Legend />
-                            <Bar dataKey="orders" fill="#00C49F" name="Jumlah Order" />
-                            <Bar dataKey="totalSales" fill="#0088FE" name="Total Penjualan" />
-                          </BarChart>
-                        </ResponsiveContainer>
-                      )}
-                    </Card.Body>
-                  </Card>
-                </Col>
               </Row>
             </Container>
           </div>
