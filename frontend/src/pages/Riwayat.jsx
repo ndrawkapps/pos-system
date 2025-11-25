@@ -12,7 +12,6 @@ import {
 } from "react-bootstrap";
 import Navbar from "../components/common/Navbar";
 import Sidebar from "../components/common/Sidebar";
-import DateRangePicker from "../components/common/DateRangePicker";
 import transactionService from "../services/transactionService";
 import settingService from "../services/settingService";
 import bluetoothPrinter from "../utils/bluetooth";
@@ -22,7 +21,9 @@ import { FiDownload, FiPrinter, FiEye } from "react-icons/fi";
 const Riwayat = () => {
   const [transactions, setTransactions] = useState([]);
   const [filteredTransactions, setFilteredTransactions] = useState([]);
-  const [dateRange, setDateRange] = useState([new Date(), new Date()]);
+  const [filterType, setFilterType] = useState("today");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [orderTypeFilter, setOrderTypeFilter] = useState("all");
   const [paymentMethodFilter, setPaymentMethodFilter] = useState("all");
   const [selectedTransaction, setSelectedTransaction] = useState(null);
@@ -49,31 +50,37 @@ const Riwayat = () => {
 
   // Apply filter dengan useCallback
   const applyFilter = useCallback(() => {
+    const now = new Date();
     let filtered = [...transactions];
 
-    // Filter by date range
-    if (dateRange[0] || dateRange[1]) {
-      filtered = filtered.filter((t) => {
-        const tDate = new Date(t.created_at);
-        tDate.setHours(0, 0, 0, 0);
-        
-        if (dateRange[0] && dateRange[1]) {
-          const start = new Date(dateRange[0]);
-          start.setHours(0, 0, 0, 0);
-          const end = new Date(dateRange[1]);
-          end.setHours(23, 59, 59, 999);
-          return tDate >= start && tDate <= end;
-        } else if (dateRange[0]) {
-          const start = new Date(dateRange[0]);
-          start.setHours(0, 0, 0, 0);
-          return tDate >= start;
-        } else if (dateRange[1]) {
-          const end = new Date(dateRange[1]);
-          end.setHours(23, 59, 59, 999);
-          return tDate <= end;
+    // Filter by date
+    switch (filterType) {
+      case "today":
+        filtered = transactions.filter((t) => {
+          const date = new Date(t.created_at);
+          return date.toDateString() === now.toDateString();
+        });
+        break;
+      case "this_month":
+        filtered = transactions.filter((t) => {
+          const date = new Date(t.created_at);
+          return (
+            date.getMonth() === now.getMonth() &&
+            date.getFullYear() === now.getFullYear()
+          );
+        });
+        break;
+      case "date_range":
+        if (startDate && endDate) {
+          filtered = transactions.filter((t) => {
+            const date = new Date(t.created_at).toISOString().split("T")[0];
+            return date >= startDate && date <= endDate;
+          });
         }
-        return true;
-      });
+        break;
+      case "all":
+      default:
+        break;
     }
 
     // Filter by order type
@@ -87,7 +94,7 @@ const Riwayat = () => {
     }
 
     setFilteredTransactions(filtered);
-  }, [dateRange, transactions, orderTypeFilter, paymentMethodFilter]);
+  }, [filterType, transactions, startDate, endDate, orderTypeFilter, paymentMethodFilter]);
 
   // Load initial data
   useEffect(() => {
@@ -250,12 +257,54 @@ const Riwayat = () => {
               <Card className="mb-4">
                 <Card.Body>
                   <Row className="g-2 align-items-center flex-wrap">
+                    <Col xs={12} md="auto" className="mb-2 mb-md-0">
+                      <ButtonGroup size="sm">
+                        <Button
+                          variant={filterType === "today" ? "primary" : "outline-primary"}
+                          onClick={() => setFilterType("today")}
+                        >
+                          Hari Ini
+                        </Button>
+                        <Button
+                          variant={filterType === "this_month" ? "primary" : "outline-primary"}
+                          onClick={() => setFilterType("this_month")}
+                        >
+                          Bulan Ini
+                        </Button>
+                        <Button
+                          variant={filterType === "all" ? "secondary" : "outline-secondary"}
+                          onClick={() => setFilterType("all")}
+                        >
+                          Semua
+                        </Button>
+                      </ButtonGroup>
+                    </Col>
+
                     <Col xs={12} sm={6} md="auto" className="mb-2 mb-md-0">
-                      <DateRangePicker
-                        startDate={dateRange[0]}
-                        endDate={dateRange[1]}
-                        onChange={(dates) => setDateRange(dates || [null, null])}
-                        placeholder="Pilih Periode"
+                      <Form.Control
+                        type="date"
+                        size="sm"
+                        value={startDate}
+                        onChange={(e) => {
+                          setStartDate(e.target.value);
+                          setFilterType("date_range");
+                        }}
+                        placeholder="Dari"
+                        style={{ minWidth: "150px" }}
+                      />
+                    </Col>
+
+                    <Col xs={12} sm={6} md="auto" className="mb-2 mb-md-0">
+                      <Form.Control
+                        type="date"
+                        size="sm"
+                        value={endDate}
+                        onChange={(e) => {
+                          setEndDate(e.target.value);
+                          setFilterType("date_range");
+                        }}
+                        placeholder="Sampai"
+                        style={{ minWidth: "150px" }}
                       />
                     </Col>
 
