@@ -21,12 +21,12 @@ exports.getStats = async (req, res) => {
 
     // Sales today
     const [salesToday] = await pool.query(
-      "SELECT COALESCE(SUM(grand_total), 0) as total FROM transactions WHERE DATE(created_at) = CURDATE()"
+      "SELECT COALESCE(SUM(total), 0) as total FROM transactions WHERE DATE(created_at) = CURDATE()"
     );
 
     // Sales this month
     const [salesMonth] = await pool.query(
-      "SELECT COALESCE(SUM(grand_total), 0) as total FROM transactions WHERE created_at >= ?",
+      "SELECT COALESCE(SUM(total), 0) as total FROM transactions WHERE created_at >= ?",
       [firstDayOfMonth]
     );
 
@@ -132,7 +132,7 @@ exports.getSalesTrend = async (req, res) => {
       query = `
         SELECT 
           DATE_FORMAT(created_at, '%Y-%m-%d') as date,
-          COALESCE(SUM(grand_total), 0) as sales
+          COALESCE(SUM(total), 0) as sales
         FROM transactions
         WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
         GROUP BY DATE_FORMAT(created_at, '%Y-%m-%d')
@@ -144,7 +144,7 @@ exports.getSalesTrend = async (req, res) => {
       query = `
         SELECT 
           DATE_FORMAT(created_at, '%Y-%m-%d') as date,
-          COALESCE(SUM(grand_total), 0) as sales
+          COALESCE(SUM(total), 0) as sales
         FROM transactions
         WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
         GROUP BY DATE_FORMAT(created_at, '%Y-%m-%d')
@@ -156,7 +156,7 @@ exports.getSalesTrend = async (req, res) => {
       query = `
         SELECT 
           DATE_FORMAT(created_at, '%Y-%m') as date,
-          COALESCE(SUM(grand_total), 0) as sales
+          COALESCE(SUM(total), 0) as sales
         FROM transactions
         WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
         GROUP BY DATE_FORMAT(created_at, '%Y-%m')
