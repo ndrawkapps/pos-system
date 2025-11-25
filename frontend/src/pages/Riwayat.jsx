@@ -24,6 +24,8 @@ const Riwayat = () => {
   const [filterType, setFilterType] = useState("today");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [orderTypeFilter, setOrderTypeFilter] = useState("all");
+  const [paymentMethodFilter, setPaymentMethodFilter] = useState("all");
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [settings, setSettings] = useState({});
@@ -51,6 +53,7 @@ const Riwayat = () => {
     const now = new Date();
     let filtered = [...transactions];
 
+    // Filter by date
     switch (filterType) {
       case "today":
         filtered = transactions.filter((t) => {
@@ -80,8 +83,18 @@ const Riwayat = () => {
         break;
     }
 
+    // Filter by order type
+    if (orderTypeFilter !== "all") {
+      filtered = filtered.filter((t) => t.order_type === orderTypeFilter);
+    }
+
+    // Filter by payment method
+    if (paymentMethodFilter !== "all") {
+      filtered = filtered.filter((t) => t.payment_method === paymentMethodFilter);
+    }
+
     setFilteredTransactions(filtered);
-  }, [filterType, transactions, startDate, endDate]);
+  }, [filterType, transactions, startDate, endDate, orderTypeFilter, paymentMethodFilter]);
 
   // Load initial data
   useEffect(() => {
@@ -303,6 +316,39 @@ const Riwayat = () => {
                           setFilterType("date_range");
                         }}
                       />
+                    </Col>
+
+                    <Col xs={12} sm={6} md="auto" className="mb-2 mb-md-0">
+                      <Form.Select
+                        size="sm"
+                        value={orderTypeFilter}
+                        onChange={(e) => setOrderTypeFilter(e.target.value)}
+                        style={{ minWidth: "150px" }}
+                      >
+                        <option value="all">Semua Tipe</option>
+                        <option value="Dine-In">Dine-In</option>
+                        <option value="Take Away">Take Away</option>
+                        <option value="GoFood">GoFood</option>
+                        <option value="GrabFood">GrabFood</option>
+                        <option value="ShopeeFood">ShopeeFood</option>
+                      </Form.Select>
+                    </Col>
+
+                    <Col xs={12} sm={6} md="auto" className="mb-2 mb-md-0">
+                      <Form.Select
+                        size="sm"
+                        value={paymentMethodFilter}
+                        onChange={(e) => setPaymentMethodFilter(e.target.value)}
+                        style={{ minWidth: "150px" }}
+                      >
+                        <option value="all">Semua Pembayaran</option>
+                        <option value="Tunai">Tunai</option>
+                        <option value="QRIS">QRIS</option>
+                        <option value="Online Order">Online Order</option>
+                        <option value="Pink99">Pink99</option>
+                        <option value="Kedai">Kedai</option>
+                        <option value="Bpk/Ibu">Bpk/Ibu</option>
+                      </Form.Select>
                     </Col>
 
                     <Col xs="auto" className="text-end ms-auto">
