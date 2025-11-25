@@ -50,11 +50,15 @@ const Beranda = () => {
   const [availableMonths, setAvailableMonths] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState("");
   const [salesByUser, setSalesByUser] = useState([]);
+  
+  // Date range for top products
+  const [topProductsStartDate, setTopProductsStartDate] = useState("");
+  const [topProductsEndDate, setTopProductsEndDate] = useState("");
 
   useEffect(() => {
     loadDashboardData();
     loadAvailableMonths();
-  }, [chartPeriod]);
+  }, [chartPeriod, topProductsStartDate, topProductsEndDate]);
 
   useEffect(() => {
     if (selectedMonth) {
@@ -88,11 +92,17 @@ const Beranda = () => {
     try {
       setLoading(true);
       
+      // Build query params for top products
+      let topProductsQuery = "limit=5";
+      if (topProductsStartDate && topProductsEndDate) {
+        topProductsQuery += `&startDate=${topProductsStartDate}&endDate=${topProductsEndDate}`;
+      }
+      
       // Load all dashboard data
       const [statsRes, topProductsRes, categoryRes, trendRes] = await Promise.all([
         api.get("/dashboard/stats"),
-        api.get("/dashboard/top-products?limit=5"),
-        api.get("/dashboard/category-stats"),
+        api.get(`/dashboard/top-products?${topProductsQuery}`),
+        api.get(`/dashboard/category-stats${topProductsStartDate && topProductsEndDate ? `?startDate=${topProductsStartDate}&endDate=${topProductsEndDate}` : ''}`),
         api.get(`/dashboard/sales-trend?period=${chartPeriod}`),
       ]);
 
@@ -310,7 +320,37 @@ const Beranda = () => {
                 <Col xs={12}>
                   <Card className="border-0 shadow-sm">
                     <Card.Body>
-                      <h5 className="mb-3">Top 5 Produk Terlaris (Keseluruhan)</h5>
+                      <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <h5 className="mb-0">Top 5 Produk Terlaris (Keseluruhan)</h5>
+                        <div className="d-flex gap-2 align-items-center">
+                          <Form.Control
+                            type="date"
+                            size="sm"
+                            style={{ width: "150px" }}
+                            value={topProductsStartDate}
+                            onChange={(e) => setTopProductsStartDate(e.target.value)}
+                          />
+                          <span>s/d</span>
+                          <Form.Control
+                            type="date"
+                            size="sm"
+                            style={{ width: "150px" }}
+                            value={topProductsEndDate}
+                            onChange={(e) => setTopProductsEndDate(e.target.value)}
+                          />
+                          {(topProductsStartDate || topProductsEndDate) && (
+                            <button
+                              className="btn btn-sm btn-outline-secondary"
+                              onClick={() => {
+                                setTopProductsStartDate("");
+                                setTopProductsEndDate("");
+                              }}
+                            >
+                              Reset
+                            </button>
+                          )}
+                        </div>
+                      </div>
                       <ResponsiveContainer width="100%" height={350}>
                         <BarChart
                           data={topProducts}
@@ -355,11 +395,13 @@ const Beranda = () => {
                     <Col xs={12} lg={6} key={index}>
                       <Card className="border-0 shadow-sm">
                         <Card.Body>
-                          <div className="d-flex justify-content-between align-items-center mb-3">
-                            <h5 className="mb-0">{category.name}</h5>
-                            <span className="badge bg-primary">
-                              {formatCurrency(category.total)}
-                            </span>
+                          <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                            <div>
+                              <h5 className="mb-0">{category.name}</h5>
+                              <span className="badge bg-primary mt-1">
+                                {formatCurrency(category.total)}
+                              </span>
+                            </div>
                           </div>
                           {category.topProducts && category.topProducts.length > 0 ? (
                             <ResponsiveContainer width="100%" height={300}>

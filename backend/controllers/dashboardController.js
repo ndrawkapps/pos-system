@@ -53,9 +53,17 @@ exports.getStats = async (req, res) => {
 exports.getTopProducts = async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 5;
+    const { startDate, endDate } = req.query;
 
-    const [products] = await pool.query(
-      `SELECT 
+    let dateFilter = "t.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
+    const queryParams = [];
+
+    if (startDate && endDate) {
+      dateFilter = "DATE(t.created_at) BETWEEN ? AND ?";
+      queryParams.push(startDate, endDate);
+    }
+
+    const query = `SELECT 
         p.id,
         p.name,
         SUM(ti.quantity) as sold,
@@ -63,12 +71,13 @@ exports.getTopProducts = async (req, res) => {
       FROM transaction_items ti
       JOIN products p ON ti.product_id = p.id
       JOIN transactions t ON ti.transaction_id = t.id
-      WHERE t.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      WHERE ${dateFilter}
       GROUP BY p.id, p.name
       ORDER BY sold DESC
-      LIMIT ?`,
-      [limit]
-    );
+      LIMIT ?`;
+
+    queryParams.push(limit);
+    const [products] = await pool.query(query, queryParams);
 
     res.json({
       success: true,
@@ -91,6 +100,16 @@ exports.getTopProducts = async (req, res) => {
 // Get sales by category
 exports.getCategoryStats = async (req, res) => {
   try {
+    const { startDate, endDate } = req.query;
+
+    let dateFilter = "t.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
+    const queryParams = [];
+
+    if (startDate && endDate) {
+      dateFilter = "DATE(t.created_at) BETWEEN ? AND ?";
+      queryParams.push(startDate, endDate);
+    }
+
     // Get all categories with active products
     const [categories] = await pool.query(
       `SELECT 
@@ -101,14 +120,20 @@ exports.getCategoryStats = async (req, res) => {
       LEFT JOIN products p ON c.id = p.category_id AND p.is_active = 1
       LEFT JOIN transaction_items ti ON p.id = ti.product_id
       LEFT JOIN transactions t ON ti.transaction_id = t.id 
-        AND t.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        AND ${dateFilter}
       GROUP BY c.id, c.name
-      ORDER BY total DESC`
+      ORDER BY total DESC`,
+      queryParams
     );
 
     // Get top 5 products for each category
     const categoriesWithTopProducts = await Promise.all(
       categories.map(async (category) => {
+        const topProductsParams = [category.id];
+        if (startDate && endDate) {
+          topProductsParams.push(startDate, endDate);
+        }
+
         const [topProducts] = await pool.query(
           `SELECT 
             p.name,
@@ -117,12 +142,12 @@ exports.getCategoryStats = async (req, res) => {
           FROM products p
           LEFT JOIN transaction_items ti ON p.id = ti.product_id
           LEFT JOIN transactions t ON ti.transaction_id = t.id 
-            AND t.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+            AND ${dateFilter}
           WHERE p.category_id = ? AND p.is_active = 1
           GROUP BY p.id, p.name
           ORDER BY sold DESC
           LIMIT 5`,
-          [category.id]
+          topProductsParams
         );
 
         return {
