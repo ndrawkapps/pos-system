@@ -106,6 +106,53 @@ const Riwayat = () => {
     applyFilter();
   }, [applyFilter]);
 
+  // Helper function to set quick date ranges
+  const setQuickDateRange = (type) => {
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    
+    switch (type) {
+      case 'today':
+        setStartDate(today);
+        setEndDate(today);
+        setFilterType('date_range');
+        break;
+      case 'yesterday':
+        const yesterday = new Date(now);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split('T')[0];
+        setStartDate(yesterdayStr);
+        setEndDate(yesterdayStr);
+        setFilterType('date_range');
+        break;
+      case 'this_week':
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - now.getDay());
+        setStartDate(startOfWeek.toISOString().split('T')[0]);
+        setEndDate(today);
+        setFilterType('date_range');
+        break;
+      case 'this_month':
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        setStartDate(startOfMonth.toISOString().split('T')[0]);
+        setEndDate(today);
+        setFilterType('date_range');
+        break;
+      case 'last_month':
+        const startLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const endLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+        setStartDate(startLastMonth.toISOString().split('T')[0]);
+        setEndDate(endLastMonth.toISOString().split('T')[0]);
+        setFilterType('date_range');
+        break;
+      case 'all':
+        setStartDate('');
+        setEndDate('');
+        setFilterType('all');
+        break;
+    }
+  };
+
   const handleShowDetail = async (transaction) => {
     try {
       const response = await transactionService.getById(transaction.id);
@@ -256,44 +303,85 @@ const Riwayat = () => {
 
               <Card className="mb-4">
                 <Card.Body>
+                  {/* Quick Date Range Buttons */}
+                  <Row className="mb-3">
+                    <Col>
+                      <div className="d-flex gap-2 flex-wrap">
+                        <Button
+                          size="sm"
+                          variant="outline-primary"
+                          onClick={() => setQuickDateRange('today')}
+                        >
+                          Hari Ini
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline-primary"
+                          onClick={() => setQuickDateRange('yesterday')}
+                        >
+                          Kemarin
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline-primary"
+                          onClick={() => setQuickDateRange('this_week')}
+                        >
+                          Minggu Ini
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline-primary"
+                          onClick={() => setQuickDateRange('this_month')}
+                        >
+                          Bulan Ini
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline-primary"
+                          onClick={() => setQuickDateRange('last_month')}
+                        >
+                          Bulan Lalu
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline-secondary"
+                          onClick={() => setQuickDateRange('all')}
+                        >
+                          Semua
+                        </Button>
+                      </div>
+                    </Col>
+                  </Row>
+
+                  {/* Date Range Inputs and Filters */}
                   <Row className="g-2 align-items-center flex-wrap">
                     <Col xs={12} sm={6} md="auto" className="mb-2 mb-md-0">
-                      <Form.Select
+                      <Form.Control
+                        type="date"
                         size="sm"
-                        value={filterType}
-                        onChange={(e) => setFilterType(e.target.value)}
+                        value={startDate}
+                        onChange={(e) => {
+                          setStartDate(e.target.value);
+                          setFilterType('date_range');
+                        }}
+                        placeholder="Dari"
                         style={{ minWidth: "150px" }}
-                      >
-                        <option value="today">Hari Ini</option>
-                        <option value="this_month">Bulan Ini</option>
-                        <option value="date_range">Pilih Tanggal</option>
-                        <option value="all">Semua Periode</option>
-                      </Form.Select>
+                      />
                     </Col>
 
-                    {filterType === "date_range" && (
-                      <>
-                        <Col xs={12} sm={6} md="auto" className="mb-2 mb-md-0">
-                          <Form.Control
-                            type="date"
-                            size="sm"
-                            value={startDate}
-                            onChange={(e) => setStartDate(e.target.value)}
-                            placeholder="Dari"
-                          />
-                        </Col>
-
-                        <Col xs={12} sm={6} md="auto" className="mb-2 mb-md-0">
-                          <Form.Control
-                            type="date"
-                            size="sm"
-                            value={endDate}
-                            onChange={(e) => setEndDate(e.target.value)}
-                            placeholder="Sampai"
-                          />
-                        </Col>
-                      </>
-                    )}
+                    <Col xs={12} sm={6} md="auto" className="mb-2 mb-md-0">
+                      <Form.Control
+                        type="date"
+                        size="sm"
+                        value={endDate}
+                        onChange={(e) => {
+                          setEndDate(e.target.value);
+                          setFilterType('date_range');
+                        }}
+                        placeholder="Sampai"
+                        style={{ minWidth: "150px" }}
+                      />
+                    </Col>
 
                     <Col xs={12} sm={6} md="auto" className="mb-2 mb-md-0">
                       <Form.Select
