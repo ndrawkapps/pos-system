@@ -105,10 +105,10 @@ exports.getCategoryStats = async (req, res) => {
       ORDER BY total DESC`
     );
 
-    // Get top product for each category
-    const categoriesWithTopProduct = await Promise.all(
+    // Get top 5 products for each category
+    const categoriesWithTopProducts = await Promise.all(
       categories.map(async (category) => {
-        const [topProduct] = await pool.query(
+        const [topProducts] = await pool.query(
           `SELECT 
             p.name,
             SUM(ti.quantity) as sold,
@@ -120,25 +120,25 @@ exports.getCategoryStats = async (req, res) => {
             AND t.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
           GROUP BY p.id, p.name
           ORDER BY sold DESC
-          LIMIT 1`,
+          LIMIT 5`,
           [category.id]
         );
 
         return {
           name: category.name,
           total: parseFloat(category.total),
-          topProduct: topProduct[0] ? {
-            name: topProduct[0].name,
-            sold: parseInt(topProduct[0].sold),
-            revenue: parseFloat(topProduct[0].revenue),
-          } : null,
+          topProducts: topProducts.map(p => ({
+            name: p.name,
+            sold: parseInt(p.sold),
+            revenue: parseFloat(p.revenue),
+          })),
         };
       })
     );
 
     res.json({
       success: true,
-      data: categoriesWithTopProduct,
+      data: categoriesWithTopProducts,
     });
   } catch (error) {
     console.error("Get category stats error:", error);

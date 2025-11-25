@@ -179,8 +179,8 @@ const Beranda = () => {
 
               {/* Charts Row */}
               <Row className="g-3 mb-4">
-                <Col xs={12} lg={8}>
-                  <Card className="h-100 border-0 shadow-sm">
+                <Col xs={12}>
+                  <Card className="border-0 shadow-sm">
                     <Card.Body>
                       <div className="d-flex justify-content-between align-items-center mb-3">
                         <h5 className="mb-0">Tren Penjualan</h5>
@@ -217,50 +217,23 @@ const Beranda = () => {
                     </Card.Body>
                   </Card>
                 </Col>
-
-                <Col xs={12} lg={4}>
-                  <Card className="h-100 border-0 shadow-sm">
-                    <Card.Body>
-                      <h5 className="mb-3">Penjualan per Kategori</h5>
-                      <ResponsiveContainer width="100%" height={300}>
-                        <PieChart>
-                          <Pie
-                            data={categoryStats}
-                            cx="50%"
-                            cy="50%"
-                            labelLine={false}
-                            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                            outerRadius={80}
-                            fill="#8884d8"
-                            dataKey="total"
-                          >
-                            {categoryStats.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                          </Pie>
-                          <Tooltip formatter={(value) => formatCurrency(value)} />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </Card.Body>
-                  </Card>
-                </Col>
               </Row>
 
-              {/* Top Products and Category Leaders */}
-              <Row className="g-3">
-                <Col xs={12} lg={6}>
+              {/* Top 5 Overall Products */}
+              <Row className="g-3 mb-4">
+                <Col xs={12}>
                   <Card className="border-0 shadow-sm">
                     <Card.Body>
-                      <h5 className="mb-3">Top 5 Produk Terlaris</h5>
+                      <h5 className="mb-3">Top 5 Produk Terlaris (Keseluruhan)</h5>
                       <ResponsiveContainer width="100%" height={350}>
                         <BarChart
                           data={topProducts}
                           layout="vertical"
-                          margin={{ left: 80 }}
+                          margin={{ left: 120 }}
                         >
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis type="number" />
-                          <YAxis dataKey="name" type="category" width={80} />
+                          <YAxis dataKey="name" type="category" width={120} />
                           <Tooltip
                             formatter={(value, name) => {
                               if (name === "Terjual") return `${value} item`;
@@ -276,45 +249,58 @@ const Beranda = () => {
                     </Card.Body>
                   </Card>
                 </Col>
+              </Row>
 
-                <Col xs={12} lg={6}>
-                  <Card className="border-0 shadow-sm">
-                    <Card.Body>
-                      <h5 className="mb-3">Produk Terlaris per Kategori</h5>
-                      <div style={{ maxHeight: "350px", overflowY: "auto" }}>
-                        {categoryStats.length === 0 ? (
-                          <div className="text-center text-muted py-5">
-                            Belum ada data
+              {/* Top Products by Category */}
+              <Row className="g-3">
+                {categoryStats.length === 0 ? (
+                  <Col xs={12}>
+                    <div className="text-center text-muted py-5">
+                      Belum ada data penjualan
+                    </div>
+                  </Col>
+                ) : (
+                  categoryStats.map((category, index) => (
+                    <Col xs={12} lg={6} key={index}>
+                      <Card className="border-0 shadow-sm">
+                        <Card.Body>
+                          <div className="d-flex justify-content-between align-items-center mb-3">
+                            <h5 className="mb-0">{category.name}</h5>
+                            <span className="badge bg-primary">
+                              {formatCurrency(category.total)}
+                            </span>
                           </div>
-                        ) : (
-                          categoryStats.map((category, index) => (
-                            <div key={index} className="mb-3 p-3 bg-light rounded">
-                              <div className="d-flex justify-content-between align-items-center mb-2">
-                                <h6 className="mb-0 text-primary">{category.name}</h6>
-                                <span className="badge bg-primary">
-                                  {formatCurrency(category.total)}
-                                </span>
-                              </div>
-                              {category.topProduct ? (
-                                <div className="ps-3">
-                                  <div className="d-flex justify-content-between small">
-                                    <span className="text-muted">🏆 {category.topProduct.name}</span>
-                                    <span className="fw-bold">{category.topProduct.sold} terjual</span>
-                                  </div>
-                                  <div className="text-end small text-success">
-                                    {formatCurrency(category.topProduct.revenue)}
-                                  </div>
-                                </div>
-                              ) : (
-                                <div className="ps-3 small text-muted">Tidak ada data</div>
-                              )}
+                          {category.topProducts && category.topProducts.length > 0 ? (
+                            <ResponsiveContainer width="100%" height={300}>
+                              <BarChart
+                                data={category.topProducts}
+                                layout="vertical"
+                                margin={{ left: 80 }}
+                              >
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis type="number" />
+                                <YAxis dataKey="name" type="category" width={80} />
+                                <Tooltip
+                                  formatter={(value, name) => {
+                                    if (name === "Terjual") return `${value} item`;
+                                    if (name === "Total") return formatCurrency(value);
+                                    return value;
+                                  }}
+                                />
+                                <Legend />
+                                <Bar dataKey="sold" fill={COLORS[index % COLORS.length]} name="Terjual" />
+                              </BarChart>
+                            </ResponsiveContainer>
+                          ) : (
+                            <div className="text-center text-muted py-5">
+                              Tidak ada data produk
                             </div>
-                          ))
-                        )}
-                      </div>
-                    </Card.Body>
-                  </Card>
-                </Col>
+                          )}
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                  ))
+                )}
               </Row>
             </Container>
           </div>
