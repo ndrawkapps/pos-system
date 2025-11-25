@@ -91,16 +91,17 @@ exports.getTopProducts = async (req, res) => {
 // Get sales by category
 exports.getCategoryStats = async (req, res) => {
   try {
+    // Get all categories with active products
     const [categories] = await pool.query(
       `SELECT 
         c.id,
         c.name,
-        SUM(ti.subtotal) as total
-      FROM transaction_items ti
-      JOIN products p ON ti.product_id = p.id
-      JOIN categories c ON p.category_id = c.id
-      JOIN transactions t ON ti.transaction_id = t.id
-      WHERE t.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        COALESCE(SUM(ti.subtotal), 0) as total
+      FROM categories c
+      LEFT JOIN products p ON c.id = p.category_id AND p.is_active = 1
+      LEFT JOIN transaction_items ti ON p.id = ti.product_id
+      LEFT JOIN transactions t ON ti.transaction_id = t.id 
+        AND t.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
       GROUP BY c.id, c.name
       ORDER BY total DESC`
     );
@@ -111,13 +112,13 @@ exports.getCategoryStats = async (req, res) => {
         const [topProducts] = await pool.query(
           `SELECT 
             p.name,
-            SUM(ti.quantity) as sold,
-            SUM(ti.subtotal) as revenue
-          FROM transaction_items ti
-          JOIN products p ON ti.product_id = p.id
-          JOIN transactions t ON ti.transaction_id = t.id
-          WHERE p.category_id = ?
+            COALESCE(SUM(ti.quantity), 0) as sold,
+            COALESCE(SUM(ti.subtotal), 0) as revenue
+          FROM products p
+          LEFT JOIN transaction_items ti ON p.id = ti.product_id
+          LEFT JOIN transactions t ON ti.transaction_id = t.id 
             AND t.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+          WHERE p.category_id = ? AND p.is_active = 1
           GROUP BY p.id, p.name
           ORDER BY sold DESC
           LIMIT 5`,
