@@ -13,6 +13,10 @@ const transactionService = {
     return api.get(`/transactions/${id}`);
   },
 
+  delete: (id) => {
+    return api.delete(`/transactions/${id}`);
+  },
+
   saveHeldOrder: (data) => {
     return api.post("/transactions/held-orders", data);
   },

@@ -17,9 +17,11 @@ import transactionService from "../services/transactionService";
 import settingService from "../services/settingService";
 import bluetoothPrinter from "../utils/bluetooth";
 import { formatCurrency, formatDateTime } from "../utils/formatters";
-import { FiDownload, FiPrinter, FiEye } from "react-icons/fi";
+import { FiDownload, FiPrinter, FiEye, FiTrash2 } from "react-icons/fi";
+import { useAuth } from "../context/AuthContext";
 
 const Riwayat = () => {
+  const { user } = useAuth();
   const [transactions, setTransactions] = useState([]);
   const [filteredTransactions, setFilteredTransactions] = useState([]);
   const [filterType, setFilterType] = useState("today");
@@ -113,8 +115,26 @@ const Riwayat = () => {
       setSelectedTransaction(response.data.data);
       setShowDetailModal(true);
     } catch (error) {
-      console.error("Get transaction detail error:", error);
+      console.error("Get detail error:", error);
       alert("Gagal memuat detail transaksi");
+    }
+  };
+
+  const handleDeleteTransaction = async (transactionId) => {
+    if (!confirm('Hapus transaksi ini? Tindakan ini tidak bisa dibatalkan dan akan mempengaruhi summary shift jika masih aktif.')) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await transactionService.delete(transactionId);
+      alert('Transaksi berhasil dihapus');
+      await loadData(); // Reload data
+    } catch (error) {
+      console.error('Delete transaction error:', error);
+      alert('Gagal menghapus transaksi: ' + (error.response?.data?.message || error.message));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -418,10 +438,20 @@ const Riwayat = () => {
                               <Button
                                 size="sm"
                                 variant="outline-secondary"
+                                className="me-1"
                                 onClick={() => handleReprint(transaction)}
                               >
                                 <FiPrinter />
                               </Button>
+                              {user?.role_name === 'admin' && (
+                                <Button
+                                  size="sm"
+                                  variant="outline-danger"
+                                  onClick={() => handleDeleteTransaction(transaction.id)}
+                                >
+                                  <FiTrash2 />
+                                </Button>
+                              )}
                             </td>
                           </tr>
                         ))}

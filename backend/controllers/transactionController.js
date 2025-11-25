@@ -283,3 +283,74 @@ exports.deleteHeldOrder = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
+
+exports.deleteTransaction = async (req, res) => {
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    const { id } = req.params;
+
+    // Get transaction details before deleting
+    const [transactions] = await conn.query(
+      `SELECT t.*, s.status as shift_status 
+       FROM transactions t
+       LEFT JOIN shifts s ON t.shift_id = s.id
+       WHERE t.id = ?`,
+      [id]
+    );
+
+    if (transactions.length === 0) {
+      await conn.rollback();
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Transaction not found' 
+      });
+    }
+
+    const transaction = transactions[0];
+
+    // Delete transaction items first (foreign key constraint)
+    await conn.query('DELETE FROM transaction_items WHERE transaction_id = ?', [id]);
+
+    // Delete the transaction
+    await conn.query('DELETE FROM transactions WHERE id = ?', [id]);
+
+    // If transaction belongs to current/open shift, update shift totals
+    if (transaction.shift_status === 'open') {
+      const amount = parseFloat(transaction.total) || 0;
+      
+      if (transaction.payment_method === 'Tunai') {
+        // Update cash totals
+        await conn.query(
+          `UPDATE shifts 
+           SET total_cash = GREATEST(total_cash - ?, 0),
+               expected_cash = GREATEST(expected_cash - ?, 0)
+           WHERE id = ?`,
+          [amount, amount, transaction.shift_id]
+        );
+      } else {
+        // Update non-cash totals
+        await conn.query(
+          `UPDATE shifts 
+           SET total_non_cash = GREATEST(total_non_cash - ?, 0)
+           WHERE id = ?`,
+          [amount, transaction.shift_id]
+        );
+      }
+    }
+
+    await conn.commit();
+
+    res.json({
+      success: true,
+      message: 'Transaction deleted successfully'
+    });
+  } catch (error) {
+    await conn.rollback();
+    console.error('Delete transaction error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  } finally {
+    conn.release();
+  }
+};
