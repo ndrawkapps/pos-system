@@ -60,7 +60,7 @@ function App() {
           <Route
             path="/summary"
             element={
-              <ProtectedRoute permissions={["all"]}>
+              <ProtectedRoute permissions={["kasir", "all"]}>
                 <Summary />
               </ProtectedRoute>
             }

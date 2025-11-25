@@ -63,7 +63,7 @@ const Sidebar = () => {
       path: "/summary",
       label: "Summary",
       icon: <FiBarChart2 />,
-      permission: "all",
+      permission: "kasir",
     },
     {
       path: "/products",
