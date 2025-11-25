@@ -52,7 +52,7 @@ exports.getStats = async (req, res) => {
 // Get top selling products
 exports.getTopProducts = async (req, res) => {
   try {
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = parseInt(req.query.limit) || 5;
 
     const [products] = await pool.query(
       `SELECT 
@@ -93,6 +93,7 @@ exports.getCategoryStats = async (req, res) => {
   try {
     const [categories] = await pool.query(
       `SELECT 
+        c.id,
         c.name,
         SUM(ti.subtotal) as total
       FROM transaction_items ti
@@ -104,12 +105,40 @@ exports.getCategoryStats = async (req, res) => {
       ORDER BY total DESC`
     );
 
+    // Get top product for each category
+    const categoriesWithTopProduct = await Promise.all(
+      categories.map(async (category) => {
+        const [topProduct] = await pool.query(
+          `SELECT 
+            p.name,
+            SUM(ti.quantity) as sold,
+            SUM(ti.subtotal) as revenue
+          FROM transaction_items ti
+          JOIN products p ON ti.product_id = p.id
+          JOIN transactions t ON ti.transaction_id = t.id
+          WHERE p.category_id = ?
+            AND t.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+          GROUP BY p.id, p.name
+          ORDER BY sold DESC
+          LIMIT 1`,
+          [category.id]
+        );
+
+        return {
+          name: category.name,
+          total: parseFloat(category.total),
+          topProduct: topProduct[0] ? {
+            name: topProduct[0].name,
+            sold: parseInt(topProduct[0].sold),
+            revenue: parseFloat(topProduct[0].revenue),
+          } : null,
+        };
+      })
+    );
+
     res.json({
       success: true,
-      data: categories.map(c => ({
-        ...c,
-        total: parseFloat(c.total),
-      })),
+      data: categoriesWithTopProduct,
     });
   } catch (error) {
     console.error("Get category stats error:", error);

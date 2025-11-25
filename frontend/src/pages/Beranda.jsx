@@ -59,7 +59,7 @@ const Beranda = () => {
       // Load all dashboard data
       const [statsRes, topProductsRes, categoryRes, trendRes] = await Promise.all([
         api.get("/dashboard/stats"),
-        api.get("/dashboard/top-products?limit=10"),
+        api.get("/dashboard/top-products?limit=5"),
         api.get("/dashboard/category-stats"),
         api.get(`/dashboard/sales-trend?period=${chartPeriod}`),
       ]);
@@ -177,7 +177,7 @@ const Beranda = () => {
                 </Col>
               </Row>
 
-              {/* Charts Row 1 */}
+              {/* Charts Row */}
               <Row className="g-3 mb-4">
                 <Col xs={12} lg={8}>
                   <Card className="h-100 border-0 shadow-sm">
@@ -246,21 +246,21 @@ const Beranda = () => {
                 </Col>
               </Row>
 
-              {/* Top Products */}
+              {/* Top Products and Category Leaders */}
               <Row className="g-3">
-                <Col xs={12}>
+                <Col xs={12} lg={6}>
                   <Card className="border-0 shadow-sm">
                     <Card.Body>
-                      <h5 className="mb-3">Produk Terlaris</h5>
-                      <ResponsiveContainer width="100%" height={400}>
+                      <h5 className="mb-3">Top 5 Produk Terlaris</h5>
+                      <ResponsiveContainer width="100%" height={350}>
                         <BarChart
                           data={topProducts}
                           layout="vertical"
-                          margin={{ left: 100 }}
+                          margin={{ left: 80 }}
                         >
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis type="number" />
-                          <YAxis dataKey="name" type="category" width={100} />
+                          <YAxis dataKey="name" type="category" width={80} />
                           <Tooltip
                             formatter={(value, name) => {
                               if (name === "Terjual") return `${value} item`;
@@ -273,6 +273,45 @@ const Beranda = () => {
                           <Bar dataKey="revenue" fill="#0088FE" name="Total" />
                         </BarChart>
                       </ResponsiveContainer>
+                    </Card.Body>
+                  </Card>
+                </Col>
+
+                <Col xs={12} lg={6}>
+                  <Card className="border-0 shadow-sm">
+                    <Card.Body>
+                      <h5 className="mb-3">Produk Terlaris per Kategori</h5>
+                      <div style={{ maxHeight: "350px", overflowY: "auto" }}>
+                        {categoryStats.length === 0 ? (
+                          <div className="text-center text-muted py-5">
+                            Belum ada data
+                          </div>
+                        ) : (
+                          categoryStats.map((category, index) => (
+                            <div key={index} className="mb-3 p-3 bg-light rounded">
+                              <div className="d-flex justify-content-between align-items-center mb-2">
+                                <h6 className="mb-0 text-primary">{category.name}</h6>
+                                <span className="badge bg-primary">
+                                  {formatCurrency(category.total)}
+                                </span>
+                              </div>
+                              {category.topProduct ? (
+                                <div className="ps-3">
+                                  <div className="d-flex justify-content-between small">
+                                    <span className="text-muted">🏆 {category.topProduct.name}</span>
+                                    <span className="fw-bold">{category.topProduct.sold} terjual</span>
+                                  </div>
+                                  <div className="text-end small text-success">
+                                    {formatCurrency(category.topProduct.revenue)}
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="ps-3 small text-muted">Tidak ada data</div>
+                              )}
+                            </div>
+                          ))
+                        )}
+                      </div>
                     </Card.Body>
                   </Card>
                 </Col>
