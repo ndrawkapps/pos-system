@@ -261,11 +261,16 @@ const Beranda = () => {
                         <BarChart
                           data={topProducts}
                           layout="vertical"
-                          margin={{ left: 120 }}
+                          margin={{ left: 150 }}
                         >
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis type="number" />
-                          <YAxis dataKey="name" type="category" width={120} />
+                          <YAxis 
+                            dataKey="name" 
+                            type="category" 
+                            width={150}
+                            style={{ fontSize: '12px' }}
+                          />
                           <Tooltip
                             formatter={(value, name) => {
                               if (name === "Terjual") return `${value} item`;
@@ -307,11 +312,16 @@ const Beranda = () => {
                               <BarChart
                                 data={category.topProducts}
                                 layout="vertical"
-                                margin={{ left: 80 }}
+                                margin={{ left: 120 }}
                               >
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis type="number" />
-                                <YAxis dataKey="name" type="category" width={80} />
+                                <YAxis 
+                                  dataKey="name" 
+                                  type="category" 
+                                  width={120}
+                                  style={{ fontSize: '11px' }}
+                                />
                                 <Tooltip
                                   formatter={(value, name) => {
                                     if (name === "Terjual") return `${value} item`;
@@ -361,9 +371,18 @@ const Beranda = () => {
                         </div>
                       ) : (
                         <ResponsiveContainer width="100%" height={400}>
-                          <BarChart data={salesByUser} margin={{ left: 80 }}>
+                          <BarChart 
+                            data={salesByUser} 
+                            margin={{ bottom: 60, left: 20, right: 20 }}
+                          >
                             <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="name" />
+                            <XAxis 
+                              dataKey="name" 
+                              angle={-45}
+                              textAnchor="end"
+                              height={80}
+                              style={{ fontSize: '12px' }}
+                            />
                             <YAxis />
                             <Tooltip
                               formatter={(value, name) => {
