@@ -50,8 +50,11 @@ const SalesHeatMap = () => {
 
   // Find max value for color intensity
   const maxValue = Math.max(
-    ...heatMapData.flatMap(day => 
-      day.hours?.map(h => viewMode === "transactions" ? h.transactions : h.totalSales) || []
+    ...heatMapData.flatMap(
+      (day) =>
+        day.hours?.map((h) =>
+          viewMode === "transactions" ? h.transactions : h.totalSales
+        ) || []
     ),
     1
   );
@@ -59,9 +62,9 @@ const SalesHeatMap = () => {
   // Get color intensity based on value
   const getColor = (value) => {
     if (value === 0) return "rgba(209, 213, 219, 0.3)"; // gray-300 very light
-    
+
     const intensity = value / maxValue;
-    
+
     // Purple gradient from light to dark
     if (intensity < 0.2) return "rgba(139, 92, 246, 0.2)"; // violet-500 20%
     if (intensity < 0.4) return "rgba(139, 92, 246, 0.4)"; // violet-500 40%
@@ -78,7 +81,9 @@ const SalesHeatMap = () => {
         <div className="d-flex justify-content-between align-items-center mb-4">
           <div>
             <h5 className="mb-1">Heat Map Penjualan</h5>
-            <small className="text-muted">Pola aktivitas penjualan berdasarkan hari dan jam</small>
+            <small className="text-muted">
+              Pola aktivitas penjualan berdasarkan hari dan jam
+            </small>
           </div>
           <div className="d-flex gap-2">
             <Form.Select
@@ -108,7 +113,7 @@ const SalesHeatMap = () => {
             {/* Hour labels (top) */}
             <div className="heatmap-header">
               <div className="heatmap-corner"></div>
-              {hours.map(hour => (
+              {hours.map((hour) => (
                 <div key={hour} className="heatmap-hour-label">
                   {hour}
                 </div>
@@ -119,16 +124,15 @@ const SalesHeatMap = () => {
             {heatMapData.map((dayData, dayIndex) => (
               <div key={dayIndex} className="heatmap-row">
                 {/* Day label */}
-                <div className="heatmap-day-label">
-                  {dayData.day}
-                </div>
-                
+                <div className="heatmap-day-label">{dayData.day}</div>
+
                 {/* Hour cells */}
                 {dayData.hours.map((hourData, hourIndex) => {
-                  const value = viewMode === "transactions" 
-                    ? hourData.transactions 
-                    : hourData.totalSales;
-                  
+                  const value =
+                    viewMode === "transactions"
+                      ? hourData.transactions
+                      : hourData.totalSales;
+
                   return (
                     <div
                       key={hourIndex}
@@ -140,10 +144,11 @@ ${formatCurrency(hourData.totalSales)}`}
                     >
                       {value > 0 && (
                         <span className="cell-value">
-                          {viewMode === "transactions" 
-                            ? value 
-                            : (value >= 1000 ? `${(value/1000).toFixed(0)}k` : value.toFixed(0))
-                          }
+                          {viewMode === "transactions"
+                            ? value
+                            : value >= 1000
+                            ? `${(value / 1000).toFixed(0)}k`
+                            : value.toFixed(0)}
                         </span>
                       )}
                     </div>
@@ -164,8 +169,8 @@ ${formatCurrency(hourData.totalSales)}`}
         {/* Insights */}
         <div className="mt-4 pt-3 border-top">
           <small className="text-muted">
-            💡 <strong>Tips:</strong> Gunakan data ini untuk scheduling staff, menentukan happy hour, 
-            dan optimasi stock preparation di jam sibuk.
+            💡 <strong>Tips:</strong> Gunakan data ini untuk scheduling staff,
+            menentukan happy hour, dan optimasi stock preparation di jam sibuk.
           </small>
         </div>
       </Card.Body>

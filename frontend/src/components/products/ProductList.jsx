@@ -3,10 +3,6 @@ import { FiEdit, FiTrash2 } from "react-icons/fi";
 import { formatCurrency } from "../../utils/formatters";
 
 const ProductList = ({ products, onEdit, onDelete, canEdit }) => {
-  const API_URL =
-    import.meta.env.VITE_API_URL?.replace("/api", "") ||
-    "http://localhost:5000";
-
   if (products.length === 0) {
     return (
       <div className="text-center text-muted py-5">
@@ -41,8 +37,8 @@ const ProductList = ({ products, onEdit, onDelete, canEdit }) => {
           <tr key={product.id}>
             <td>
               {product.image ? (
-                <Image
-                  src={`${API_URL}${product.image}`}
+                <img
+                  src={product.image}
                   alt={product.name}
                   thumbnail
                   style={{ width: "60px", height: "60px", objectFit: "cover" }}

@@ -13,10 +13,6 @@ const ProductForm = ({ product, categories, onSubmit, onCancel }) => {
   const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const API_URL =
-    import.meta.env.VITE_API_URL?.replace("/api", "") ||
-    "http://localhost:5000";
-
   useEffect(() => {
     if (product) {
       setFormData({
@@ -27,10 +23,10 @@ const ProductForm = ({ product, categories, onSubmit, onCancel }) => {
         is_active: product.is_active,
       });
       if (product.image) {
-        setImagePreview(`${API_URL}${product.image}`);
+        setImagePreview(product.image);
       }
     }
-  }, [product, API_URL]);
+  }, [product]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;

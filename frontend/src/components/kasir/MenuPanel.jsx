@@ -11,10 +11,6 @@ const MenuPanel = ({
   onSearchChange,
   onProductClick,
 }) => {
-  const API_URL =
-    import.meta.env.VITE_API_URL?.replace("/api", "") ||
-    "http://localhost:5000";
-
   return (
     <div className="p-3">
       <h5 className="mb-3">Menu Produk</h5>
@@ -64,7 +60,7 @@ const MenuPanel = ({
             >
               {product.image && (
                 <img
-                  src={`${API_URL}${product.image}`}
+                  src={product.image}
                   alt={product.name}
                   onError={(e) => (e.target.style.display = "none")}
                 />
