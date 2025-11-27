@@ -1,12 +1,5 @@
 import { useState, useEffect } from "react";
-import {
-  Container,
-  Row,
-  Col,
-  Card,
-  Form,
-  Spinner,
-} from "react-bootstrap";
+import { Container, Row, Col, Card, Form, Spinner } from "react-bootstrap";
 import {
   FiShoppingCart,
   FiDollarSign,
@@ -34,7 +27,16 @@ import SalesHeatMap from "../components/dashboard/SalesHeatMap";
 import api from "../services/api";
 import { formatCurrency } from "../utils/formatters";
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FFC658', '#FF6B9D'];
+const COLORS = [
+  "#0088FE",
+  "#00C49F",
+  "#FFBB28",
+  "#FF8042",
+  "#8884D8",
+  "#82CA9D",
+  "#FFC658",
+  "#FF6B9D",
+];
 
 const Beranda = () => {
   const [loading, setLoading] = useState(true);
@@ -51,7 +53,7 @@ const Beranda = () => {
   const [availableMonths, setAvailableMonths] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState("");
   const [salesByUser, setSalesByUser] = useState([]);
-  
+
   // Date range for top products
   const [topProductsStartDate, setTopProductsStartDate] = useState("");
   const [topProductsEndDate, setTopProductsEndDate] = useState("");
@@ -82,7 +84,9 @@ const Beranda = () => {
 
   const loadSalesByUser = async () => {
     try {
-      const res = await api.get(`/dashboard/sales-by-user?month=${selectedMonth}`);
+      const res = await api.get(
+        `/dashboard/sales-by-user?month=${selectedMonth}`
+      );
       setSalesByUser(res.data.data || []);
     } catch (error) {
       console.error("Load sales by user error:", error);
@@ -92,32 +96,40 @@ const Beranda = () => {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      
+
       // Build query params for top products
       let topProductsQuery = "limit=5";
       if (topProductsStartDate && topProductsEndDate) {
         topProductsQuery += `&startDate=${topProductsStartDate}&endDate=${topProductsEndDate}`;
       }
-      
-      // Load all dashboard data
-      const [statsRes, topProductsRes, categoryRes, trendRes] = await Promise.all([
-        api.get("/dashboard/stats"),
-        api.get(`/dashboard/top-products?${topProductsQuery}`),
-        api.get(`/dashboard/category-stats${topProductsStartDate && topProductsEndDate ? `?startDate=${topProductsStartDate}&endDate=${topProductsEndDate}` : ''}`),
-        api.get(`/dashboard/sales-trend?period=${chartPeriod}`),
-      ]);
 
-      setStats(statsRes.data.data || {
-        ordersToday: 0,
-        ordersMonth: 0,
-        salesToday: 0,
-        salesMonth: 0,
-      });
-      
+      // Load all dashboard data
+      const [statsRes, topProductsRes, categoryRes, trendRes] =
+        await Promise.all([
+          api.get("/dashboard/stats"),
+          api.get(`/dashboard/top-products?${topProductsQuery}`),
+          api.get(
+            `/dashboard/category-stats${
+              topProductsStartDate && topProductsEndDate
+                ? `?startDate=${topProductsStartDate}&endDate=${topProductsEndDate}`
+                : ""
+            }`
+          ),
+          api.get(`/dashboard/sales-trend?period=${chartPeriod}`),
+        ]);
+
+      setStats(
+        statsRes.data.data || {
+          ordersToday: 0,
+          ordersMonth: 0,
+          salesToday: 0,
+          salesMonth: 0,
+        }
+      );
+
       setTopProducts(topProductsRes.data.data || []);
       setCategoryStats(categoryRes.data.data || []);
       setSalesTrend(trendRes.data.data || []);
-      
     } catch (error) {
       console.error("Load dashboard error:", error);
     } finally {
@@ -133,7 +145,11 @@ const Beranda = () => {
           <div className="d-flex flex-1">
             <Sidebar />
             <div className="content-wrapper">
-              <Container fluid className="d-flex justify-content-center align-items-center" style={{ minHeight: "80vh" }}>
+              <Container
+                fluid
+                className="d-flex justify-content-center align-items-center"
+                style={{ minHeight: "80vh" }}
+              >
                 <Spinner animation="border" variant="primary" />
               </Container>
             </div>
@@ -160,7 +176,9 @@ const Beranda = () => {
                     <Card.Body>
                       <div className="d-flex justify-content-between align-items-center">
                         <div>
-                          <p className="text-muted mb-1 small">Pesanan Hari Ini</p>
+                          <p className="text-muted mb-1 small">
+                            Pesanan Hari Ini
+                          </p>
                           <h3 className="mb-0">{stats.ordersToday}</h3>
                         </div>
                         <div className="bg-primary bg-opacity-10 p-3 rounded">
@@ -176,7 +194,9 @@ const Beranda = () => {
                     <Card.Body>
                       <div className="d-flex justify-content-between align-items-center">
                         <div>
-                          <p className="text-muted mb-1 small">Pesanan Bulan Ini</p>
+                          <p className="text-muted mb-1 small">
+                            Pesanan Bulan Ini
+                          </p>
                           <h3 className="mb-0">{stats.ordersMonth}</h3>
                         </div>
                         <div className="bg-success bg-opacity-10 p-3 rounded">
@@ -192,8 +212,12 @@ const Beranda = () => {
                     <Card.Body>
                       <div className="d-flex justify-content-between align-items-center">
                         <div>
-                          <p className="text-muted mb-1 small">Penjualan Hari Ini</p>
-                          <h3 className="mb-0">{formatCurrency(stats.salesToday)}</h3>
+                          <p className="text-muted mb-1 small">
+                            Penjualan Hari Ini
+                          </p>
+                          <h3 className="mb-0">
+                            {formatCurrency(stats.salesToday)}
+                          </h3>
                         </div>
                         <div className="bg-warning bg-opacity-10 p-3 rounded">
                           <FiDollarSign className="text-warning" size={24} />
@@ -208,8 +232,12 @@ const Beranda = () => {
                     <Card.Body>
                       <div className="d-flex justify-content-between align-items-center">
                         <div>
-                          <p className="text-muted mb-1 small">Penjualan Bulan Ini</p>
-                          <h3 className="mb-0">{formatCurrency(stats.salesMonth)}</h3>
+                          <p className="text-muted mb-1 small">
+                            Penjualan Bulan Ini
+                          </p>
+                          <h3 className="mb-0">
+                            {formatCurrency(stats.salesMonth)}
+                          </h3>
                         </div>
                         <div className="bg-info bg-opacity-10 p-3 rounded">
                           <FiTrendingUp className="text-info" size={24} />
@@ -243,9 +271,9 @@ const Beranda = () => {
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis dataKey="date" />
                           <YAxis />
-                          <Tooltip 
+                          <Tooltip
                             formatter={(value) => formatCurrency(value)}
-                            labelStyle={{ color: '#000' }}
+                            labelStyle={{ color: "#000" }}
                           />
                           <Legend />
                           <Line
@@ -285,29 +313,39 @@ const Beranda = () => {
                         </div>
                       ) : (
                         <ResponsiveContainer width="100%" height={300}>
-                          <BarChart 
-                            data={salesByUser} 
+                          <BarChart
+                            data={salesByUser}
                             margin={{ bottom: 60, left: 20, right: 20 }}
                           >
                             <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis 
-                              dataKey="name" 
+                            <XAxis
+                              dataKey="name"
                               angle={-45}
                               textAnchor="end"
                               height={80}
-                              style={{ fontSize: '11px' }}
+                              style={{ fontSize: "11px" }}
                             />
                             <YAxis />
                             <Tooltip
                               formatter={(value, name) => {
-                                if (name === "Jumlah Order") return `${value} order`;
-                                if (name === "Total Penjualan") return formatCurrency(value);
+                                if (name === "Jumlah Order")
+                                  return `${value} order`;
+                                if (name === "Total Penjualan")
+                                  return formatCurrency(value);
                                 return value;
                               }}
                             />
                             <Legend />
-                            <Bar dataKey="orders" fill="#00C49F" name="Jumlah Order" />
-                            <Bar dataKey="totalSales" fill="#0088FE" name="Total Penjualan" />
+                            <Bar
+                              dataKey="orders"
+                              fill="#00C49F"
+                              name="Jumlah Order"
+                            />
+                            <Bar
+                              dataKey="totalSales"
+                              fill="#0088FE"
+                              name="Total Penjualan"
+                            />
                           </BarChart>
                         </ResponsiveContainer>
                       )}
@@ -322,14 +360,18 @@ const Beranda = () => {
                   <Card className="border-0 shadow-sm">
                     <Card.Body>
                       <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                        <h5 className="mb-0">Top 5 Produk Terlaris (Keseluruhan)</h5>
+                        <h5 className="mb-0">
+                          Top 5 Produk Terlaris (Keseluruhan)
+                        </h5>
                         <div className="d-flex gap-2 align-items-center">
                           <Form.Control
                             type="date"
                             size="sm"
                             style={{ width: "150px" }}
                             value={topProductsStartDate}
-                            onChange={(e) => setTopProductsStartDate(e.target.value)}
+                            onChange={(e) =>
+                              setTopProductsStartDate(e.target.value)
+                            }
                           />
                           <span>s/d</span>
                           <Form.Control
@@ -337,7 +379,9 @@ const Beranda = () => {
                             size="sm"
                             style={{ width: "150px" }}
                             value={topProductsEndDate}
-                            onChange={(e) => setTopProductsEndDate(e.target.value)}
+                            onChange={(e) =>
+                              setTopProductsEndDate(e.target.value)
+                            }
                           />
                           {(topProductsStartDate || topProductsEndDate) && (
                             <button
@@ -360,16 +404,17 @@ const Beranda = () => {
                         >
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis type="number" />
-                          <YAxis 
-                            dataKey="name" 
-                            type="category" 
+                          <YAxis
+                            dataKey="name"
+                            type="category"
                             width={150}
-                            style={{ fontSize: '12px' }}
+                            style={{ fontSize: "12px" }}
                           />
                           <Tooltip
                             formatter={(value, name) => {
                               if (name === "Terjual") return `${value} item`;
-                              if (name === "Total") return formatCurrency(value);
+                              if (name === "Total")
+                                return formatCurrency(value);
                               return value;
                             }}
                           />
@@ -404,7 +449,8 @@ const Beranda = () => {
                               </span>
                             </div>
                           </div>
-                          {category.topProducts && category.topProducts.length > 0 ? (
+                          {category.topProducts &&
+                          category.topProducts.length > 0 ? (
                             <ResponsiveContainer width="100%" height={300}>
                               <BarChart
                                 data={category.topProducts}
@@ -413,21 +459,27 @@ const Beranda = () => {
                               >
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis type="number" />
-                                <YAxis 
-                                  dataKey="name" 
-                                  type="category" 
+                                <YAxis
+                                  dataKey="name"
+                                  type="category"
                                   width={120}
-                                  style={{ fontSize: '11px' }}
+                                  style={{ fontSize: "11px" }}
                                 />
                                 <Tooltip
                                   formatter={(value, name) => {
-                                    if (name === "Terjual") return `${value} item`;
-                                    if (name === "Total") return formatCurrency(value);
+                                    if (name === "Terjual")
+                                      return `${value} item`;
+                                    if (name === "Total")
+                                      return formatCurrency(value);
                                     return value;
                                   }}
                                 />
                                 <Legend />
-                                <Bar dataKey="sold" fill={COLORS[index % COLORS.length]} name="Terjual" />
+                                <Bar
+                                  dataKey="sold"
+                                  fill={COLORS[index % COLORS.length]}
+                                  name="Terjual"
+                                />
                               </BarChart>
                             </ResponsiveContainer>
                           ) : (

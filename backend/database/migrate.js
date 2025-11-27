@@ -3,14 +3,14 @@ const bcrypt = require("bcryptjs");
 
 const runMigrations = async () => {
   let connection;
-  
+
   try {
     console.log("🔄 Starting database migration...");
     console.log("📡 Connecting to database...");
-    
+
     connection = await pool.getConnection();
     console.log("✅ Database connection established");
-    
+
     console.log("🔄 Starting database migration...");
 
     // Create roles table
@@ -190,7 +190,9 @@ const runMigrations = async () => {
     console.log("✅ Table 'settings' created/verified");
 
     // Seed default roles
-    const [roles] = await connection.query("SELECT COUNT(*) as count FROM roles");
+    const [roles] = await connection.query(
+      "SELECT COUNT(*) as count FROM roles"
+    );
     if (roles[0].count === 0) {
       await connection.query(`
         INSERT INTO roles (name, permissions) VALUES 
@@ -203,21 +205,27 @@ const runMigrations = async () => {
     }
 
     // Seed default admin user
-    const [users] = await connection.query("SELECT COUNT(*) as count FROM users WHERE username = 'admin'");
+    const [users] = await connection.query(
+      "SELECT COUNT(*) as count FROM users WHERE username = 'admin'"
+    );
     if (users[0].count === 0) {
       const hashedPassword = await bcrypt.hash("admin123", 10);
-      await connection.query(`
+      await connection.query(
+        `
         INSERT INTO users (username, password, full_name, role_id) VALUES 
         ('admin', ?, 'Administrator', 1)
-      `, [hashedPassword]);
-      console.log("✅ Default admin user created (username: admin, password: admin123)");
+      `,
+        [hashedPassword]
+      );
+      console.log(
+        "✅ Default admin user created (username: admin, password: admin123)"
+      );
     } else {
       console.log("ℹ️  Admin user already exists, skipping seed");
     }
 
     console.log("🎉 Database migration completed successfully!");
     return true;
-
   } catch (error) {
     console.error("❌ Migration error:", error.message);
     console.error("📋 Error details:", error);

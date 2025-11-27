@@ -8,7 +8,11 @@ const path = require("path");
  * @param {string} folder - Folder in bucket (e.g., 'products', 'settings')
  * @returns {Promise<string>} - Public URL of uploaded file
  */
-const uploadToSupabase = async (fileBuffer, originalName, folder = "products") => {
+const uploadToSupabase = async (
+  fileBuffer,
+  originalName,
+  folder = "products"
+) => {
   try {
     // Generate unique filename
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);

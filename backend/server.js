@@ -12,15 +12,18 @@ const corsOptions = {
   origin: function (origin, callback) {
     // Allow requests with no origin (mobile apps, Postman, etc.)
     if (!origin) return callback(null, true);
-    
+
     // Allow all origins in production or use specific frontend URL
     const allowedOrigins = [
-      'https://pos-kedai99.zeabur.app',
-      'http://localhost:3000',
-      'http://localhost:5173'
+      "https://pos-kedai99.zeabur.app",
+      "http://localhost:3000",
+      "http://localhost:5173",
     ];
-    
-    if (process.env.CORS_ORIGIN === '*' || allowedOrigins.indexOf(origin) !== -1) {
+
+    if (
+      process.env.CORS_ORIGIN === "*" ||
+      allowedOrigins.indexOf(origin) !== -1
+    ) {
       callback(null, true);
     } else {
       callback(null, true); // Allow all for now
@@ -31,7 +34,7 @@ const corsOptions = {
   exposedHeaders: ["Content-Range", "X-Content-Range"],
   credentials: true,
   maxAge: 86400, // 24 hours
-  optionsSuccessStatus: 204
+  optionsSuccessStatus: 204,
 };
 
 // Middleware
@@ -55,13 +58,13 @@ app.use("/api/dashboard", require("./routes/dashboard"));
 
 // Health
 app.get("/", (req, res) => {
-	res.json({ success: true, message: "POS API is running" });
+  res.json({ success: true, message: "POS API is running" });
 });
 
 // Error handler
 app.use((err, req, res, next) => {
-	console.error(err);
-	res.status(500).json({ success: false, message: "Server error" });
+  console.error(err);
+  res.status(500).json({ success: false, message: "Server error" });
 });
 
 const PORT = process.env.PORT || 5000;
@@ -69,25 +72,27 @@ const PORT = process.env.PORT || 5000;
 // Run database migrations before starting server
 console.log("🚀 Starting POS Backend Server...");
 console.log("📊 Database Config:", {
-	host: process.env.DB_HOST,
-	port: process.env.DB_PORT,
-	user: process.env.DB_USER,
-	database: process.env.DB_NAME
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  user: process.env.DB_USER,
+  database: process.env.DB_NAME,
 });
 
 runMigrations()
-	.then(() => {
-		app.listen(PORT, () => {
-			console.log(`✅ Server started successfully on port ${PORT}`);
-			console.log(`🌐 Access at: http://localhost:${PORT}`);
-		});
-	})
-	.catch((error) => {
-		console.error("❌ Migration failed:", error);
-		console.log("⚠️  Starting server anyway (manual migration may be needed)...");
-		
-		// Start server anyway for debugging
-		app.listen(PORT, () => {
-			console.log(`⚠️  Server started on port ${PORT} (with migration errors)`);
-		});
-	});
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`✅ Server started successfully on port ${PORT}`);
+      console.log(`🌐 Access at: http://localhost:${PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.error("❌ Migration failed:", error);
+    console.log(
+      "⚠️  Starting server anyway (manual migration may be needed)..."
+    );
+
+    // Start server anyway for debugging
+    app.listen(PORT, () => {
+      console.log(`⚠️  Server started on port ${PORT} (with migration errors)`);
+    });
+  });

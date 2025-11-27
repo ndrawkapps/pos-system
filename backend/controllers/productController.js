@@ -1,10 +1,13 @@
-const pool = require('../config/database');
-const { uploadToSupabase, deleteFromSupabase } = require('../utils/supabaseUpload');
+const pool = require("../config/database");
+const {
+  uploadToSupabase,
+  deleteFromSupabase,
+} = require("../utils/supabaseUpload");
 
 exports.getAllProducts = async (req, res) => {
   try {
     const { category_id, search, is_active } = req.query;
-    
+
     let query = `
       SELECT p.*, c.name as category_name 
       FROM products p 
@@ -14,31 +17,31 @@ exports.getAllProducts = async (req, res) => {
     const params = [];
 
     if (category_id) {
-      query += ' AND p.category_id = ?';
+      query += " AND p.category_id = ?";
       params.push(category_id);
     }
 
     if (search) {
-      query += ' AND p.name LIKE ?';
+      query += " AND p.name LIKE ?";
       params.push(`%${search}%`);
     }
 
     if (is_active !== undefined) {
-      query += ' AND p.is_active = ?';
-      params.push(is_active === 'true' ? 1 : 0);
+      query += " AND p.is_active = ?";
+      params.push(is_active === "true" ? 1 : 0);
     }
 
-    query += ' ORDER BY p.name ASC';
+    query += " ORDER BY p.name ASC";
 
     const [products] = await pool.query(query, params);
 
     res.json({
       success: true,
-      data: products
+      data: products,
     });
   } catch (error) {
-    console.error('Get products error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error("Get products error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
@@ -55,19 +58,19 @@ exports.getProductById = async (req, res) => {
     );
 
     if (products.length === 0) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Product not found' 
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
       });
     }
 
     res.json({
       success: true,
-      data: products[0]
+      data: products[0],
     });
   } catch (error) {
-    console.error('Get product error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error("Get product error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
@@ -79,20 +82,24 @@ exports.createProduct = async (req, res) => {
     // Upload to Supabase if file provided
     if (req.file) {
       try {
-        image = await uploadToSupabase(req.file.buffer, req.file.originalname, 'products');
+        image = await uploadToSupabase(
+          req.file.buffer,
+          req.file.originalname,
+          "products"
+        );
       } catch (uploadError) {
-        console.error('Upload error:', uploadError);
-        return res.status(500).json({ 
-          success: false, 
-          message: 'Failed to upload image' 
+        console.error("Upload error:", uploadError);
+        return res.status(500).json({
+          success: false,
+          message: "Failed to upload image",
         });
       }
     }
 
     if (!name || !category_id || !price) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Name, category, and price are required' 
+      return res.status(400).json({
+        success: false,
+        message: "Name, category, and price are required",
       });
     }
 
@@ -104,19 +111,19 @@ exports.createProduct = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: 'Product created successfully',
-      data: { 
-        id: result.insertId, 
-        name, 
-        category_id, 
-        price, 
-        image, 
-        stock 
-      }
+      message: "Product created successfully",
+      data: {
+        id: result.insertId,
+        name,
+        category_id,
+        price,
+        image,
+        stock,
+      },
     });
   } catch (error) {
-    console.error('Create product error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error("Create product error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
@@ -127,14 +134,14 @@ exports.updateProduct = async (req, res) => {
 
     // Get current product
     const [currentProduct] = await pool.query(
-      'SELECT image FROM products WHERE id = ?',
+      "SELECT image FROM products WHERE id = ?",
       [id]
     );
 
     if (currentProduct.length === 0) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Product not found' 
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
       });
     }
 
@@ -146,15 +153,19 @@ exports.updateProduct = async (req, res) => {
       if (image) {
         await deleteFromSupabase(image);
       }
-      
+
       // Upload new image to Supabase
       try {
-        image = await uploadToSupabase(req.file.buffer, req.file.originalname, 'products');
+        image = await uploadToSupabase(
+          req.file.buffer,
+          req.file.originalname,
+          "products"
+        );
       } catch (uploadError) {
-        console.error('Upload error:', uploadError);
-        return res.status(500).json({ 
-          success: false, 
-          message: 'Failed to upload image' 
+        console.error("Upload error:", uploadError);
+        return res.status(500).json({
+          success: false,
+          message: "Failed to upload image",
         });
       }
     }
@@ -168,11 +179,11 @@ exports.updateProduct = async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Product updated successfully'
+      message: "Product updated successfully",
     });
   } catch (error) {
-    console.error('Update product error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error("Update product error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
@@ -181,14 +192,14 @@ exports.deleteProduct = async (req, res) => {
     const { id } = req.params;
 
     const [product] = await pool.query(
-      'SELECT image FROM products WHERE id = ?',
+      "SELECT image FROM products WHERE id = ?",
       [id]
     );
 
     if (product.length === 0) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Product not found' 
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
       });
     }
 
@@ -197,14 +208,14 @@ exports.deleteProduct = async (req, res) => {
       await deleteFromSupabase(product[0].image);
     }
 
-    await pool.query('DELETE FROM products WHERE id = ?', [id]);
+    await pool.query("DELETE FROM products WHERE id = ?", [id]);
 
     res.json({
       success: true,
-      message: 'Product deleted successfully'
+      message: "Product deleted successfully",
     });
   } catch (error) {
-    console.error('Delete product error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error("Delete product error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };

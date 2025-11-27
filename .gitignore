@@ -29,3 +29,6 @@ package-lock.json
 coverage/
 /.history/
 dump.sql
+products_backup.sql
+railway_backup.sql
+*_backup.sql

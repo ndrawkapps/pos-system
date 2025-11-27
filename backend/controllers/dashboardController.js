@@ -5,7 +5,7 @@ exports.getStats = async (req, res) => {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
     // Orders today
@@ -81,7 +81,7 @@ exports.getTopProducts = async (req, res) => {
 
     res.json({
       success: true,
-      data: products.map(p => ({
+      data: products.map((p) => ({
         ...p,
         sold: parseInt(p.sold),
         revenue: parseFloat(p.revenue),
@@ -153,7 +153,7 @@ exports.getCategoryStats = async (req, res) => {
         return {
           name: category.name,
           total: parseFloat(category.total),
-          topProducts: topProducts.map(p => ({
+          topProducts: topProducts.map((p) => ({
             name: p.name,
             sold: parseInt(p.sold),
             revenue: parseFloat(p.revenue),
@@ -224,7 +224,7 @@ exports.getSalesTrend = async (req, res) => {
 
     res.json({
       success: true,
-      data: trends.map(t => ({
+      data: trends.map((t) => ({
         date: t.date,
         sales: parseFloat(t.sales),
       })),
@@ -269,7 +269,7 @@ exports.getAvailableMonths = async (req, res) => {
 exports.getSalesByUser = async (req, res) => {
   try {
     const { month } = req.query; // Format: YYYY-MM
-    
+
     if (!month) {
       return res.status(400).json({
         success: false,
@@ -293,7 +293,7 @@ exports.getSalesByUser = async (req, res) => {
 
     res.json({
       success: true,
-      data: salesByUser.map(u => ({
+      data: salesByUser.map((u) => ({
         name: u.name,
         orders: parseInt(u.orders),
         totalSales: parseFloat(u.totalSales),
@@ -312,8 +312,8 @@ exports.getSalesByUser = async (req, res) => {
 // Get sales heat map (day x hour)
 exports.getSalesHeatMap = async (req, res) => {
   try {
-    const { period = '30' } = req.query; // 7, 30, 90 days
-    
+    const { period = "30" } = req.query; // 7, 30, 90 days
+
     const days = parseInt(period);
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
@@ -333,29 +333,39 @@ exports.getSalesHeatMap = async (req, res) => {
     );
 
     // Transform to matrix format [day][hour]
-    const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    const dayNames = [
+      "Minggu",
+      "Senin",
+      "Selasa",
+      "Rabu",
+      "Kamis",
+      "Jumat",
+      "Sabtu",
+    ];
     const heatMap = [];
 
     // Initialize matrix
     for (let day = 0; day < 7; day++) {
       heatMap[day] = {
         day: dayNames[day],
-        hours: Array(24).fill(0).map((_, hour) => ({
-          hour,
-          transactions: 0,
-          totalSales: 0
-        }))
+        hours: Array(24)
+          .fill(0)
+          .map((_, hour) => ({
+            hour,
+            transactions: 0,
+            totalSales: 0,
+          })),
       };
     }
 
     // Fill with data
-    heatMapData.forEach(row => {
+    heatMapData.forEach((row) => {
       const dayIndex = row.dayOfWeek - 1; // MySQL DAYOFWEEK is 1-7 (Sunday=1)
       const hourIndex = row.hour;
       heatMap[dayIndex].hours[hourIndex] = {
         hour: hourIndex,
         transactions: parseInt(row.transactions),
-        totalSales: parseFloat(row.totalSales)
+        totalSales: parseFloat(row.totalSales),
       };
     });
 
@@ -376,7 +386,7 @@ exports.getSalesHeatMap = async (req, res) => {
 // Get sales heat map (day x hour)
 exports.getSalesHeatMap = async (req, res) => {
   try {
-    const { period = '30' } = req.query; // days to analyze, default 30
+    const { period = "30" } = req.query; // days to analyze, default 30
     const days = parseInt(period);
 
     // Get sales data grouped by day of week and hour
@@ -395,14 +405,26 @@ exports.getSalesHeatMap = async (req, res) => {
 
     // Transform data into matrix format for heatmap
     // Days: 1=Minggu, 2=Senin, ..., 7=Sabtu
-    const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-    
+    const dayNames = [
+      "Minggu",
+      "Senin",
+      "Selasa",
+      "Rabu",
+      "Kamis",
+      "Jumat",
+      "Sabtu",
+    ];
+
     // Initialize matrix with zeros
-    const matrix = Array(7).fill(null).map(() => Array(24).fill(0));
-    const countMatrix = Array(7).fill(null).map(() => Array(24).fill(0));
-    
+    const matrix = Array(7)
+      .fill(null)
+      .map(() => Array(24).fill(0));
+    const countMatrix = Array(7)
+      .fill(null)
+      .map(() => Array(24).fill(0));
+
     // Fill matrix with actual data
-    heatmapData.forEach(row => {
+    heatmapData.forEach((row) => {
       const dayIndex = row.dayOfWeek - 1; // Convert to 0-indexed
       const hour = row.hour;
       matrix[dayIndex][hour] = parseFloat(row.totalSales);
@@ -417,7 +439,7 @@ exports.getSalesHeatMap = async (req, res) => {
           day: dayNames[day],
           dayIndex: day,
           hour: hour,
-          hourLabel: `${hour.toString().padStart(2, '0')}:00`,
+          hourLabel: `${hour.toString().padStart(2, "0")}:00`,
           sales: matrix[day][hour],
           transactionCount: countMatrix[day][hour],
         });
@@ -425,13 +447,19 @@ exports.getSalesHeatMap = async (req, res) => {
     }
 
     // Calculate summary statistics
-    const totalSales = heatmapData.reduce((sum, row) => sum + parseFloat(row.totalSales), 0);
-    const totalTransactions = heatmapData.reduce((sum, row) => sum + parseInt(row.transactionCount), 0);
-    
+    const totalSales = heatmapData.reduce(
+      (sum, row) => sum + parseFloat(row.totalSales),
+      0
+    );
+    const totalTransactions = heatmapData.reduce(
+      (sum, row) => sum + parseInt(row.transactionCount),
+      0
+    );
+
     // Find peak hour
     let peakHour = null;
     let maxSales = 0;
-    heatmapData.forEach(row => {
+    heatmapData.forEach((row) => {
       if (parseFloat(row.totalSales) > maxSales) {
         maxSales = parseFloat(row.totalSales);
         peakHour = {
