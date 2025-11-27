@@ -144,6 +144,49 @@ exports.getCurrentShift = async (req, res) => {
   }
 };
 
+exports.getShiftHistory = async (req, res) => {
+  try {
+    const { date, user_id } = req.query;
+    const currentUserId = req.user.id;
+    const isAdmin = req.user.role_name === 'Admin' || req.user.role_name === 'Owner';
+
+    let query = `
+      SELECT s.*, u.full_name as kasir_name
+      FROM shifts s
+      JOIN users u ON s.user_id = u.id
+      WHERE 1=1
+    `;
+    const params = [];
+
+    // Admin can see all shifts, kasir only their own
+    if (!isAdmin) {
+      query += ' AND s.user_id = ?';
+      params.push(currentUserId);
+    } else if (user_id) {
+      query += ' AND s.user_id = ?';
+      params.push(user_id);
+    }
+
+    // Filter by date if provided
+    if (date) {
+      query += ' AND DATE(s.start_time) = ?';
+      params.push(date);
+    }
+
+    query += ' ORDER BY s.start_time DESC LIMIT 50';
+
+    const [shifts] = await pool.query(query, params);
+
+    res.json({
+      success: true,
+      data: shifts
+    });
+  } catch (error) {
+    console.error('Get shift history error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
 exports.getShiftSummary = async (req, res) => {
   try {
     const { shift_id } = req.params;
