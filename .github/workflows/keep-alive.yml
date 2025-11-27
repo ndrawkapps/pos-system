@@ -1,0 +1,23 @@
+name: Keep Backend Alive
+
+on:
+  schedule:
+    # Runs every 10 minutes
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Backend Health Endpoint
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://pos-kedai99-backend.zeabur.app/health)
+          echo "Health check response: $response"
+          if [ $response -eq 200 ] || [ $response -eq 503 ]; then
+            echo "✅ Backend is responding"
+            exit 0
+          else
+            echo "⚠️ Unexpected response code: $response"
+            exit 1
+          fi
