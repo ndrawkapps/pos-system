@@ -8,7 +8,9 @@ const retryRequest = async (fn, retries = 3, delay = 2000) => {
     } catch (error) {
       const isLastAttempt = i === retries - 1;
       const isNetworkError =
-        !error.response || error.code === "ECONNABORTED" || error.code === "ERR_NETWORK";
+        !error.response ||
+        error.code === "ECONNABORTED" ||
+        error.code === "ERR_NETWORK";
 
       // Only retry on network errors or 503 (service unavailable)
       const shouldRetry =

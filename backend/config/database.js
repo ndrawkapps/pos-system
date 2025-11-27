@@ -6,7 +6,10 @@ let pool;
 // Support Railway's public proxy connection string if provided (`MYSQL_PUBLIC_URL`),
 // then `MYSQL_URL` / `MYSQL_URI` / `DB_URL`, and finally individual DB_* vars.
 const mysqlUrl =
-  process.env.MYSQL_PUBLIC_URL || process.env.MYSQL_URL || process.env.MYSQL_URI || process.env.DB_URL;
+  process.env.MYSQL_PUBLIC_URL ||
+  process.env.MYSQL_URL ||
+  process.env.MYSQL_URI ||
+  process.env.DB_URL;
 if (mysqlUrl) {
   // mysql2 supports creating a pool from a connection string
   pool = mysql.createPool(mysqlUrl);
@@ -18,7 +21,7 @@ if (mysqlUrl) {
     password: process.env.DB_PASSWORD || "",
     database: process.env.DB_NAME || "pos_system",
     waitForConnections: true,
-    connectionLimit: 10,
+    connectionLimit: 3, // Reduced from 10 for memory optimization
     queueLimit: 0,
   });
 }

@@ -43,13 +43,18 @@ const ProductList = ({ products, onEdit, onDelete, canEdit }) => {
                   thumbnail
                   style={{ width: "60px", height: "60px", objectFit: "cover" }}
                   onError={(e) => {
-                    e.target.style.display = 'none';
+                    e.target.style.display = "none";
                     const parent = e.target.parentElement;
-                    if (parent && !parent.querySelector('.no-image-placeholder')) {
-                      const placeholder = document.createElement('div');
-                      placeholder.className = 'no-image-placeholder d-flex align-items-center justify-content-center bg-light rounded';
-                      placeholder.style.cssText = 'width: 60px; height: 60px;';
-                      placeholder.innerHTML = '<span style="font-size: 24px;">📦</span>';
+                    if (
+                      parent &&
+                      !parent.querySelector(".no-image-placeholder")
+                    ) {
+                      const placeholder = document.createElement("div");
+                      placeholder.className =
+                        "no-image-placeholder d-flex align-items-center justify-content-center bg-light rounded";
+                      placeholder.style.cssText = "width: 60px; height: 60px;";
+                      placeholder.innerHTML =
+                        '<span style="font-size: 24px;">📦</span>';
                       parent.appendChild(placeholder);
                     }
                   }}

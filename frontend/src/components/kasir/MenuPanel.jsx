@@ -66,7 +66,9 @@ const MenuPanel = ({
                 />
               )}
               <div className="menu-item-name">{product.name}</div>
-              <div className="menu-item-price">{formatCurrency(product.price)}</div>
+              <div className="menu-item-price">
+                {formatCurrency(product.price)}
+              </div>
             </div>
           ))
         )}
