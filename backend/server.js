@@ -3,6 +3,8 @@ const cors = require("cors");
 const path = require("path");
 require("dotenv").config();
 
+const runMigrations = require("./database/migrate");
+
 const app = express();
 
 // Middleware
@@ -37,6 +39,14 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-	console.log(`Server started on port ${PORT}`);
-});
+// Run database migrations before starting server
+runMigrations()
+	.then(() => {
+		app.listen(PORT, () => {
+			console.log(`Server started on port ${PORT}`);
+		});
+	})
+	.catch((error) => {
+		console.error("Failed to start server:", error);
+		process.exit(1);
+	});
