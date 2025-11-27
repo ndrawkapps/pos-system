@@ -56,9 +56,30 @@ app.use("/api/shifts", require("./routes/shifts"));
 app.use("/api/transactions", require("./routes/transactions"));
 app.use("/api/dashboard", require("./routes/dashboard"));
 
-// Health
+// Health check endpoints
 app.get("/", (req, res) => {
   res.json({ success: true, message: "POS API is running" });
+});
+
+app.get("/health", async (req, res) => {
+  try {
+    const pool = require("./config/database");
+    const [result] = await pool.query("SELECT 1");
+    res.json({
+      success: true,
+      status: "healthy",
+      database: "connected",
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    res.status(503).json({
+      success: false,
+      status: "unhealthy",
+      database: "disconnected",
+      error: error.message,
+      timestamp: new Date().toISOString(),
+    });
+  }
 });
 
 // Error handler

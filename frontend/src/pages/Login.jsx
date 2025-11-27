@@ -37,10 +37,22 @@ const Login = () => {
       return;
     }
 
-    const result = await login(username, password);
+    try {
+      const result = await login(username, password);
 
-    if (!result.success) {
-      setError(result.message || "Login gagal");
+      if (!result.success) {
+        setError(result.message || "Login gagal. Silakan coba lagi.");
+        setLoading(false);
+      }
+    } catch (err) {
+      // Handle network or timeout errors
+      if (err.code === "ERR_NETWORK" || err.code === "ECONNABORTED") {
+        setError(
+          "Koneksi ke server gagal. Server sedang starting up, silakan tunggu beberapa detik dan coba lagi."
+        );
+      } else {
+        setError("Terjadi kesalahan. Silakan coba lagi.");
+      }
       setLoading(false);
     }
   };
@@ -107,13 +119,21 @@ const Login = () => {
                   {loading ? (
                     <>
                       <span className="spinner-border spinner-border-sm me-2" />
-                      Loading...
+                      Connecting...
                     </>
                   ) : (
                     "Login"
                   )}
                 </Button>
               </Form>
+
+              {loading && (
+                <div className="text-center mt-3">
+                  <small className="text-muted">
+                    Sedang menghubungkan ke server...
+                  </small>
+                </div>
+              )}
             </Card.Body>
           </Card>
 
