@@ -2,9 +2,15 @@ const pool = require("../config/database");
 const bcrypt = require("bcryptjs");
 
 const runMigrations = async () => {
-  const connection = await pool.getConnection();
+  let connection;
   
   try {
+    console.log("🔄 Starting database migration...");
+    console.log("📡 Connecting to database...");
+    
+    connection = await pool.getConnection();
+    console.log("✅ Database connection established");
+    
     console.log("🔄 Starting database migration...");
 
     // Create roles table
@@ -214,9 +220,13 @@ const runMigrations = async () => {
 
   } catch (error) {
     console.error("❌ Migration error:", error.message);
+    console.error("📋 Error details:", error);
     throw error;
   } finally {
-    connection.release();
+    if (connection) {
+      connection.release();
+      console.log("🔌 Database connection released");
+    }
   }
 };
 

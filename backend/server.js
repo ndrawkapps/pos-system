@@ -49,13 +49,27 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 
 // Run database migrations before starting server
+console.log("🚀 Starting POS Backend Server...");
+console.log("📊 Database Config:", {
+	host: process.env.DB_HOST,
+	port: process.env.DB_PORT,
+	user: process.env.DB_USER,
+	database: process.env.DB_NAME
+});
+
 runMigrations()
 	.then(() => {
 		app.listen(PORT, () => {
-			console.log(`Server started on port ${PORT}`);
+			console.log(`✅ Server started successfully on port ${PORT}`);
+			console.log(`🌐 Access at: http://localhost:${PORT}`);
 		});
 	})
 	.catch((error) => {
-		console.error("Failed to start server:", error);
-		process.exit(1);
+		console.error("❌ Migration failed:", error);
+		console.log("⚠️  Starting server anyway (manual migration may be needed)...");
+		
+		// Start server anyway for debugging
+		app.listen(PORT, () => {
+			console.log(`⚠️  Server started on port ${PORT} (with migration errors)`);
+		});
 	});
