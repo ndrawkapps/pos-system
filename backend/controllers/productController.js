@@ -1,6 +1,5 @@
 const pool = require('../config/database');
-const fs = require('fs');
-const path = require('path');
+const { uploadToSupabase, deleteFromSupabase } = require('../utils/supabaseUpload');
 
 exports.getAllProducts = async (req, res) => {
   try {
@@ -75,7 +74,20 @@ exports.getProductById = async (req, res) => {
 exports.createProduct = async (req, res) => {
   try {
     const { name, category_id, price, stock } = req.body;
-    const image = req.file ? `/uploads/products/${req.file.filename}` : null;
+    let image = null;
+
+    // Upload to Supabase if file provided
+    if (req.file) {
+      try {
+        image = await uploadToSupabase(req.file.buffer, req.file.originalname, 'products');
+      } catch (uploadError) {
+        console.error('Upload error:', uploadError);
+        return res.status(500).json({ 
+          success: false, 
+          message: 'Failed to upload image' 
+        });
+      }
+    }
 
     if (!name || !category_id || !price) {
       return res.status(400).json({ 
@@ -128,15 +140,23 @@ exports.updateProduct = async (req, res) => {
 
     let image = currentProduct[0].image;
 
-    // If new image uploaded, delete old one
+    // If new image uploaded
     if (req.file) {
+      // Delete old image from Supabase
       if (image) {
-        const oldImagePath = path.join(__dirname, '..', image);
-        if (fs.existsSync(oldImagePath)) {
-          fs.unlinkSync(oldImagePath);
-        }
+        await deleteFromSupabase(image);
       }
-      image = `/uploads/products/${req.file.filename}`;
+      
+      // Upload new image to Supabase
+      try {
+        image = await uploadToSupabase(req.file.buffer, req.file.originalname, 'products');
+      } catch (uploadError) {
+        console.error('Upload error:', uploadError);
+        return res.status(500).json({ 
+          success: false, 
+          message: 'Failed to upload image' 
+        });
+      }
     }
 
     const [result] = await pool.query(
@@ -172,12 +192,9 @@ exports.deleteProduct = async (req, res) => {
       });
     }
 
-    // Delete image file if exists
+    // Delete image from Supabase if exists
     if (product[0].image) {
-      const imagePath = path.join(__dirname, '..', product[0].image);
-      if (fs.existsSync(imagePath)) {
-        fs.unlinkSync(imagePath);
-      }
+      await deleteFromSupabase(product[0].image);
     }
 
     await pool.query('DELETE FROM products WHERE id = ?', [id]);
