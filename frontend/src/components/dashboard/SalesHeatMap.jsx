@@ -36,10 +36,22 @@ const SalesHeatMap = () => {
     );
   }
 
+  // Safety check for data
+  if (!Array.isArray(heatMapData) || heatMapData.length === 0) {
+    return (
+      <Card className="border-0 shadow-sm">
+        <Card.Body className="text-center py-5 text-muted">
+          <p>Tidak ada data heat map tersedia</p>
+          <small>Mulai transaksi untuk melihat pola penjualan</small>
+        </Card.Body>
+      </Card>
+    );
+  }
+
   // Find max value for color intensity
   const maxValue = Math.max(
     ...heatMapData.flatMap(day => 
-      day.hours.map(h => viewMode === "transactions" ? h.transactions : h.totalSales)
+      day.hours?.map(h => viewMode === "transactions" ? h.transactions : h.totalSales) || []
     ),
     1
   );
