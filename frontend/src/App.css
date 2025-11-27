@@ -201,10 +201,9 @@ code {
 /* Menu Grid */
 .menu-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 140px));
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 12px;
   margin-top: 15px;
-  justify-content: start;
 }
 
 .menu-item {
@@ -218,7 +217,6 @@ code {
   flex-direction: column;
   justify-content: space-between;
   height: 160px;
-  width: 140px;
 }
 
 .menu-item:hover {
@@ -381,11 +379,10 @@ code {
   }
 
   .menu-grid {
-    grid-template-columns: repeat(auto-fill, minmax(130px, 130px));
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
   }
   
   .menu-item {
-    width: 130px;
     height: 150px;
   }
 }
@@ -396,13 +393,12 @@ code {
   }
 
   .menu-grid {
-    grid-template-columns: repeat(auto-fill, minmax(110px, 110px));
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
     gap: 10px;
   }
 
   .menu-item {
     height: 140px;
-    width: 110px;
     padding: 10px;
   }
   
