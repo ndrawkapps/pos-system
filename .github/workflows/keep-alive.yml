@@ -1,11 +1,12 @@
 name: Keep Backend Alive
 
-# DISABLED for cost optimization - uncomment schedule to enable
+# Active only during business hours (7:45-10:30 WIB/UTC+7)
+# GitHub Actions uses UTC, so 7:45 WIB = 00:45 UTC, 10:30 WIB = 03:30 UTC
 on:
-  # schedule:
-  #   # Runs every 10 minutes
-  #   - cron: "*/10 * * * *"
-  workflow_dispatch: # Allow manual trigger only
+  schedule:
+    # Runs every 10 minutes between 00:45 and 03:30 UTC (7:45-10:30 WIB)
+    - cron: "*/10 0-3 * * *"
+  workflow_dispatch: # Allow manual trigger
 
 jobs:
   keep-alive:
