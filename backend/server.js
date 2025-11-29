@@ -42,6 +42,13 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Request logging middleware (untuk monitoring usage)
+app.use((req, res, next) => {
+  const timestamp = new Date().toISOString();
+  console.log(`[${timestamp}] ${req.method} ${req.path} - IP: ${req.ip}`);
+  next();
+});
+
 // Serve uploads
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
