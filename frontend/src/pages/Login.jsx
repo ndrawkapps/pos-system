@@ -10,11 +10,12 @@ import {
 } from "react-bootstrap";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { FiUser, FiLock } from "react-icons/fi";
+import { FiUser, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
 
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { login, user } = useAuth();
@@ -99,13 +100,21 @@ const Login = () => {
                       <FiLock />
                     </span>
                     <Form.Control
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       placeholder="Masukkan password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       disabled={loading}
                       required
                     />
+                    <Button
+                      variant="outline-secondary"
+                      onClick={() => setShowPassword(!showPassword)}
+                      disabled={loading}
+                      style={{ borderLeft: 0 }}
+                    >
+                      {showPassword ? <FiEyeOff /> : <FiEye />}
+                    </Button>
                   </div>
                 </Form.Group>
 
