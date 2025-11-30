@@ -23,14 +23,29 @@ export const AuthProvider = ({ children }) => {
       try {
         const response = await authService.getCurrentUser();
         setUser(response.data.user);
+        // Save user data to localStorage as backup
+        localStorage.setItem("user", JSON.stringify(response.data.user));
       } catch (error) {
+        console.log("Auth check error:", error.response?.status, error.message);
+        
         // Only remove token if it's a real auth error (401), not network/cold start error
         if (error.response?.status === 401) {
+          console.log("Token invalid, logging out");
           localStorage.removeItem("token");
+          localStorage.removeItem("user");
           setUser(null);
+        } else {
+          // For network errors or cold starts, try to use cached user data
+          console.log("Network/cold start error, using cached user data");
+          const cachedUser = localStorage.getItem("user");
+          if (cachedUser) {
+            try {
+              setUser(JSON.parse(cachedUser));
+            } catch (e) {
+              console.error("Failed to parse cached user", e);
+            }
+          }
         }
-        // For network errors or cold starts, keep the token and user state
-        // User will be re-authenticated on next successful request
       }
     }
     setLoading(false);
@@ -48,6 +63,7 @@ export const AuthProvider = ({ children }) => {
         const userData = response.data.user;
 
         localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(userData));
         setUser(userData);
 
         // Small delay to ensure state is updated before navigation
@@ -67,6 +83,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = useCallback(() => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     setUser(null);
     navigate("/login");
   }, [navigate]);

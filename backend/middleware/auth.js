@@ -6,13 +6,23 @@ exports.authenticate = async (req, res, next) => {
     const token = req.headers.authorization?.split(" ")[1];
 
     if (!token) {
+      console.log("Auth failed: No token provided");
       return res.status(401).json({
         success: false,
         message: "No token provided",
       });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (jwtError) {
+      console.log("Auth failed: Invalid token -", jwtError.message);
+      return res.status(401).json({
+        success: false,
+        message: "Invalid or expired token",
+      });
+    }
 
     const [users] = await pool.query(
       `SELECT u.*, r.name as role_name, r.permissions 
@@ -23,6 +33,7 @@ exports.authenticate = async (req, res, next) => {
     );
 
     if (users.length === 0) {
+      console.log("Auth failed: User not found or inactive for id:", decoded.id);
       return res.status(401).json({
         success: false,
         message: "User not found or inactive",
@@ -42,9 +53,10 @@ exports.authenticate = async (req, res, next) => {
     }
     next();
   } catch (error) {
+    console.error("Auth middleware error:", error);
     return res.status(401).json({
       success: false,
-      message: "Invalid token",
+      message: "Authentication failed",
     });
   }
 };
