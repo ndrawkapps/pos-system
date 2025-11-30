@@ -26,11 +26,28 @@ api.interceptors.request.use(
 // Handle response errors
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
+
+    // Handle 401 errors
     if (error.response?.status === 401) {
+      // Don't logout on auth check endpoint failure
+      if (originalRequest.url?.includes('/auth/me')) {
+        return Promise.reject(error);
+      }
+      
+      // Only logout and redirect if it's a genuine auth failure
       localStorage.removeItem("token");
       window.location.href = "/login";
+      return Promise.reject(error);
     }
+
+    // Handle network errors or 503 (service unavailable during cold start)
+    if (!error.response || error.response?.status === 503) {
+      // Don't logout on network/cold start errors
+      return Promise.reject(error);
+    }
+
     return Promise.reject(error);
   }
 );

@@ -24,8 +24,13 @@ export const AuthProvider = ({ children }) => {
         const response = await authService.getCurrentUser();
         setUser(response.data.user);
       } catch (error) {
-        localStorage.removeItem("token");
-        setUser(null);
+        // Only remove token if it's a real auth error (401), not network/cold start error
+        if (error.response?.status === 401) {
+          localStorage.removeItem("token");
+          setUser(null);
+        }
+        // For network errors or cold starts, keep the token and user state
+        // User will be re-authenticated on next successful request
       }
     }
     setLoading(false);

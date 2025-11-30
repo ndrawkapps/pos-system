@@ -33,7 +33,8 @@ const authService = {
   },
 
   getCurrentUser: () => {
-    return api.get("/auth/me");
+    // Add retry for getCurrentUser to handle cold starts after refresh
+    return retryRequest(() => api.get("/auth/me"), 2, 1500);
   },
 
   changePassword: (oldPassword, newPassword) => {
