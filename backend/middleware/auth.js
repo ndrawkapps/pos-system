@@ -3,10 +3,13 @@ const pool = require("../config/database");
 
 exports.authenticate = async (req, res, next) => {
   try {
-    const token = req.headers.authorization?.split(" ")[1];
+    const authHeader = req.headers.authorization;
+    console.log("Auth Header:", authHeader ? authHeader.substring(0, 20) + "..." : "MISSING");
+    
+    const token = authHeader?.split(" ")[1];
 
     if (!token) {
-      console.log("Auth failed: No token provided");
+      console.log("❌ Auth failed: No token provided");
       return res.status(401).json({
         success: false,
         message: "No token provided",
@@ -16,8 +19,11 @@ exports.authenticate = async (req, res, next) => {
     let decoded;
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET);
+      console.log("✅ Token verified for user ID:", decoded.id);
     } catch (jwtError) {
-      console.log("Auth failed: Invalid token -", jwtError.message);
+      console.log("❌ JWT verification failed:", jwtError.message);
+      console.log("   Token (first 20 chars):", token.substring(0, 20));
+      console.log("   JWT_SECRET exists:", !!process.env.JWT_SECRET);
       return res.status(401).json({
         success: false,
         message: "Invalid or expired token",
@@ -33,13 +39,14 @@ exports.authenticate = async (req, res, next) => {
     );
 
     if (users.length === 0) {
-      console.log("Auth failed: User not found or inactive for id:", decoded.id);
+      console.log("❌ User not found or inactive for ID:", decoded.id);
       return res.status(401).json({
         success: false,
         message: "User not found or inactive",
       });
     }
 
+    console.log("✅ Auth successful for user:", users[0].username);
     req.user = users[0];
     // Normalize permissions on the user object to avoid JSON.parse errors later
     try {
@@ -53,7 +60,7 @@ exports.authenticate = async (req, res, next) => {
     }
     next();
   } catch (error) {
-    console.error("Auth middleware error:", error);
+    console.error("❌ Auth middleware error:", error);
     return res.status(401).json({
       success: false,
       message: "Authentication failed",

@@ -28,22 +28,30 @@ export const AuthProvider = ({ children }) => {
       } catch (error) {
         console.log("Auth check error:", error.response?.status, error.message);
         
-        // Only remove token if it's a real auth error (401), not network/cold start error
+        // If 401, token is genuinely invalid - clear everything and force re-login
         if (error.response?.status === 401) {
-          console.log("Token invalid, logging out");
+          console.log("Token invalid (401), clearing auth data");
           localStorage.removeItem("token");
           localStorage.removeItem("user");
           setUser(null);
-        } else {
-          // For network errors or cold starts, try to use cached user data
-          console.log("Network/cold start error, using cached user data");
-          const cachedUser = localStorage.getItem("user");
-          if (cachedUser) {
-            try {
-              setUser(JSON.parse(cachedUser));
-            } catch (e) {
-              console.error("Failed to parse cached user", e);
-            }
+          setLoading(false);
+          return; // Exit early, let ProtectedRoute handle redirect
+        }
+        
+        // For network errors or cold starts, try to use cached user data
+        console.log("Network/cold start error, attempting to use cached user data");
+        const cachedUser = localStorage.getItem("user");
+        if (cachedUser) {
+          try {
+            const parsedUser = JSON.parse(cachedUser);
+            console.log("Using cached user:", parsedUser.username);
+            setUser(parsedUser);
+          } catch (e) {
+            console.error("Failed to parse cached user", e);
+            // If cache is corrupted, clear everything
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            setUser(null);
           }
         }
       }
