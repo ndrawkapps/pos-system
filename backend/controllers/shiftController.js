@@ -147,8 +147,6 @@ exports.getCurrentShift = async (req, res) => {
 exports.getShiftHistory = async (req, res) => {
   try {
     const { date, user_id } = req.query;
-    const currentUserId = req.user.id;
-    const isAdmin = req.user.role_name === 'Admin' || req.user.role_name === 'Owner';
 
     let query = `
       SELECT s.*, u.full_name as kasir_name
@@ -158,11 +156,9 @@ exports.getShiftHistory = async (req, res) => {
     `;
     const params = [];
 
-    // Admin can see all shifts, kasir only their own
-    if (!isAdmin) {
-      query += ' AND s.user_id = ?';
-      params.push(currentUserId);
-    } else if (user_id) {
+    // All authenticated users can see all shifts
+    // Filter by user_id if provided in query
+    if (user_id) {
       query += ' AND s.user_id = ?';
       params.push(user_id);
     }
