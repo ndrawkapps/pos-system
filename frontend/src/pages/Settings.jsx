@@ -4,9 +4,14 @@ import Sidebar from "../components/common/Sidebar";
 import PrinterSettings from "../components/settings/PrinterSettings";
 import ProfileSettings from "../components/settings/ProfileSettings";
 import bluetoothPrinter from "../utils/bluetooth";
+import { useAuth } from "../context/AuthContext";
 import { FiInfo } from "react-icons/fi";
 
 const Settings = () => {
+  const { hasPermission } = useAuth();
+  const canAccessAllSettings = hasPermission('all');
+  const canAccessPrinter = hasPermission('settings_printer') || canAccessAllSettings;
+
   return (
     <div className="app-container">
       <div className="d-flex flex-column w-100">
@@ -18,27 +23,34 @@ const Settings = () => {
               <div className="mb-4">
                 <h2 className="mb-1">Pengaturan Aplikasi</h2>
                 <p className="text-muted mb-0">
-                  Konfigurasi printer, profile toko, dan pengaturan sistem
+                  {canAccessAllSettings 
+                    ? 'Konfigurasi printer, profile toko, dan pengaturan sistem'
+                    : 'Konfigurasi printer untuk cetak struk'}
                 </p>
               </div>
 
               <Row className="g-4">
-                <Col lg={6}>
-                  <PrinterSettings />
-                </Col>
+                {canAccessPrinter && (
+                  <Col lg={canAccessAllSettings ? 6 : 12}>
+                    <PrinterSettings />
+                  </Col>
+                )}
 
-                <Col lg={6}>
-                  <ProfileSettings />
-                </Col>
+                {canAccessAllSettings && (
+                  <Col lg={6}>
+                    <ProfileSettings />
+                  </Col>
+                )}
               </Row>
 
-              <Row className="mt-4">
-                <Col>
-                  <Card>
-                    <Card.Header className="bg-white">
-                      <FiInfo className="me-2" />
-                      Informasi Sistem
-                    </Card.Header>
+              {canAccessAllSettings && (
+                <Row className="mt-4">
+                  <Col>
+                    <Card>
+                      <Card.Header className="bg-white">
+                        <FiInfo className="me-2" />
+                        Informasi Sistem
+                      </Card.Header>
                     <Card.Body>
                       <Row>
                         <Col md={6}>
@@ -148,7 +160,9 @@ const Settings = () => {
                   </Card>
                 </Col>
               </Row>
+              )}
 
+              {canAccessAllSettings && (
               <Row className="mt-4">
                 <Col>
                   <Card className="border-primary">
@@ -187,6 +201,7 @@ const Settings = () => {
                   </Card>
                 </Col>
               </Row>
+              )}
             </Container>
           </div>
         </div>

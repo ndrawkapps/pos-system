@@ -143,7 +143,7 @@ CREATE TABLE settings (
 -- Insert default roles
 INSERT INTO roles (name, permissions) VALUES 
 ('admin', JSON_ARRAY('all')),
-('kasir', JSON_ARRAY('kasir', 'riwayat', 'products_view', 'categories_view'));
+('kasir', JSON_ARRAY('kasir', 'riwayat', 'products_view', 'categories_view', 'settings_printer'));
 
 -- Insert default admin user (password: admin123)
 INSERT INTO users (username, password, full_name, role_id) VALUES 

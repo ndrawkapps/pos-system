@@ -83,7 +83,7 @@ const Sidebar = () => {
       path: "/settings",
       label: "Pengaturan",
       icon: <FiSettings />,
-      permission: "all",
+      permission: "settings_printer", // Kasir can access printer settings
     },
   ];
 
