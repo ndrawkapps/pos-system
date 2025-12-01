@@ -8,7 +8,7 @@ router.post('/close', authenticate, shiftController.closeShift);
 router.get('/current', authenticate, shiftController.getCurrentShift);
 router.get('/history', authenticate, shiftController.getShiftHistory);
 router.get('/:shift_id/summary', authenticate, shiftController.getShiftSummary);
-router.post('/cash-flow', authenticate, authorize('all'), shiftController.addCashFlow);
-router.delete('/cash-flow/:id', authenticate, authorize('all'), shiftController.deleteCashFlow);
+router.post('/cash-flow', authenticate, shiftController.addCashFlow);
+router.delete('/cash-flow/:id', authenticate, shiftController.deleteCashFlow);
 
 module.exports = router;
