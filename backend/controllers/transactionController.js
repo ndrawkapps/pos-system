@@ -31,12 +31,15 @@ exports.createTransaction = async (req, res) => {
     items.forEach(item => {
       const itemSubtotal = item.price * item.quantity;
       
-      // Calculate per-item discount
+      // Calculate per-item discount with safe defaults
       let itemDiscountAmount = 0;
-      if (item.discount_type === 'percentage' && item.discount_value > 0) {
-        itemDiscountAmount = (itemSubtotal * item.discount_value) / 100;
-      } else if (item.discount_type === 'nominal' && item.discount_value > 0) {
-        itemDiscountAmount = item.discount_value;
+      const itemDiscountType = item.discount_type || 'none';
+      const itemDiscountValue = parseFloat(item.discount_value) || 0;
+      
+      if (itemDiscountType === 'percentage' && itemDiscountValue > 0) {
+        itemDiscountAmount = (itemSubtotal * itemDiscountValue) / 100;
+      } else if (itemDiscountType === 'nominal' && itemDiscountValue > 0) {
+        itemDiscountAmount = itemDiscountValue;
       }
       
       // Add to subtotal (after item discount)
@@ -78,10 +81,10 @@ exports.createTransaction = async (req, res) => {
     for (const item of items) {
       const itemSubtotal = item.price * item.quantity;
       
-      // Calculate per-item discount
+      // Calculate per-item discount with safe defaults
       let itemDiscountAmount = 0;
       const itemDiscountType = item.discount_type || 'none';
-      const itemDiscountValue = item.discount_value || 0;
+      const itemDiscountValue = parseFloat(item.discount_value) || 0;
       
       if (itemDiscountType === 'percentage' && itemDiscountValue > 0) {
         itemDiscountAmount = (itemSubtotal * itemDiscountValue) / 100;
@@ -99,7 +102,7 @@ exports.createTransaction = async (req, res) => {
         [
           transaction_id, item.id, item.name, item.price, 
           item.quantity, itemSubtotal, itemDiscountType, itemDiscountValue, 
-          itemDiscountAmount, itemTotal, item.note
+          itemDiscountAmount, itemTotal, item.note || null
         ]
       );
     }
