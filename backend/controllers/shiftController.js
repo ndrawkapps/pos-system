@@ -165,7 +165,8 @@ exports.getShiftHistory = async (req, res) => {
 
     // Filter by date if provided
     if (date) {
-      query += ' AND DATE(s.start_time) = ?';
+      // Use >= and < next day to catch all records on that date
+      query += ' AND DATE(s.start_time) = DATE(?)';
       params.push(date);
     }
 
