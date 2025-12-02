@@ -450,9 +450,16 @@ const Kasir = () => {
     }
 
     try {
+      // Clean cart items to ensure valid discount values
+      const cleanedItems = cart.map(item => ({
+        ...item,
+        discount_type: item.discount_type || 'none',
+        discount_value: parseFloat(item.discount_value) || 0,
+      }));
+
       const response = await transactionService.create({
         shift_id: shift.id,
-        items: cart,
+        items: cleanedItems,
         order_type: orderType,
         table_number: tableNumber,
         payment_method: paymentMethod,
