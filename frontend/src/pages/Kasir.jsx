@@ -35,6 +35,7 @@ const Kasir = () => {
   const [showCashModal, setShowCashModal] = useState(false);
   const [showHeldModal, setShowHeldModal] = useState(false);
   const [showShiftModal, setShowShiftModal] = useState(false);
+  const [shiftModalRequired, setShiftModalRequired] = useState(false);
 
   const loadProducts = useCallback(async () => {
     try {
@@ -72,7 +73,9 @@ const Kasir = () => {
         setShift(response.data.data);
         loadHeldOrders(response.data.data.id);
       } else {
+        // Show shift modal on initial load, but not required
         setShowShiftModal(true);
+        setShiftModalRequired(false);
       }
     } catch (error) {
       console.error("Load shift error:", error);
@@ -124,13 +127,31 @@ const Kasir = () => {
       await api.post("/shifts/open", { modal_awal: modalAwal });
       await loadCurrentShift();
       setShowShiftModal(false);
+      setShiftModalRequired(false);
     } catch (error) {
       console.error("Open shift error:", error);
       alert(error.response?.data?.message || "Gagal membuka shift");
     }
   };
 
+  const handleCloseShiftModal = () => {
+    setShowShiftModal(false);
+    setShiftModalRequired(false);
+  };
+
+  const checkShiftRequired = () => {
+    if (!shift) {
+      setShowShiftModal(true);
+      setShiftModalRequired(true);
+      return false;
+    }
+    return true;
+  };
+
   const addToCart = (product) => {
+    // Check if shift is required before adding to cart
+    if (!checkShiftRequired()) return;
+
     const existingItem = cart.find(
       (item) => item.id === product.id && !item.note
     );
@@ -196,7 +217,9 @@ const Kasir = () => {
   };
 
   const handleSaveOrder = async () => {
-    if (cart.length === 0 || !shift) return;
+    if (cart.length === 0) return;
+    
+    if (!checkShiftRequired()) return;
 
     try {
       await transactionService.saveHeldOrder({
@@ -235,6 +258,8 @@ const Kasir = () => {
 
   const handlePrintKitchen = async () => {
     if (cart.length === 0) return;
+    
+    if (!checkShiftRequired()) return;
 
     // Check printer connection
     if (!bluetoothPrinter.isConnected()) {
@@ -280,6 +305,8 @@ const Kasir = () => {
 
   const handlePrintCheck = async () => {
     if (cart.length === 0) return;
+    
+    if (!checkShiftRequired()) return;
 
     // Check printer connection
     if (!bluetoothPrinter.isConnected()) {
@@ -335,6 +362,8 @@ const Kasir = () => {
   };
 
   const handlePayment = (paymentMethod) => {
+    if (!checkShiftRequired()) return;
+    
     setShowPaymentModal(false);
 
     if (paymentMethod === "Tunai") {
@@ -350,7 +379,7 @@ const Kasir = () => {
   };
 
   const processPayment = async (paymentMethod, paidAmount) => {
-    if (!shift) return;
+    if (!checkShiftRequired()) return;
 
     // Check printer connection before payment
     if (!bluetoothPrinter.isConnected()) {
@@ -576,7 +605,12 @@ const Kasir = () => {
         onLoadOrder={handleLoadHeldOrder}
       />
 
-      <ShiftModal show={showShiftModal} onOpenShift={handleOpenShift} />
+      <ShiftModal 
+        show={showShiftModal} 
+        onOpenShift={handleOpenShift}
+        onClose={handleCloseShiftModal}
+        required={shiftModalRequired}
+      />
     </div>
   );
 };
