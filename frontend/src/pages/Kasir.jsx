@@ -174,6 +174,8 @@ const Kasir = () => {
           cartItemId: Date.now(),
           quantity: 1,
           note: "",
+          discount_type: "none",
+          discount_value: "",
         },
       ]);
     }
@@ -269,7 +271,14 @@ const Kasir = () => {
 
   const handleLoadHeldOrder = async (order) => {
     try {
-      setCart(order.items);
+      // Ensure all items have discount properties
+      const itemsWithDiscount = order.items.map(item => ({
+        ...item,
+        discount_type: item.discount_type || "none",
+        discount_value: item.discount_value || "",
+      }));
+      
+      setCart(itemsWithDiscount);
       setOrderType(order.order_type);
       setTableNumber(order.table_number || "");
       setTransactionNote(order.transaction_note || "");
