@@ -245,6 +245,19 @@ const Kasir = () => {
     }, 0);
   };
 
+  const calculateFinalTotal = () => {
+    const subtotal = calculateTotal();
+    let orderDiscountAmount = 0;
+    
+    if (discountType === 'percentage' && discountValue > 0) {
+      orderDiscountAmount = (subtotal * parseFloat(discountValue)) / 100;
+    } else if (discountType === 'nominal' && discountValue > 0) {
+      orderDiscountAmount = parseFloat(discountValue) || 0;
+    }
+    
+    return subtotal - orderDiscountAmount;
+  };
+
   const handleSaveOrder = async () => {
     if (cart.length === 0) return;
     
@@ -642,14 +655,14 @@ const Kasir = () => {
 
       <PaymentModal
         show={showPaymentModal}
-        total={calculateTotal()}
+        total={calculateFinalTotal()}
         onHide={() => setShowPaymentModal(false)}
         onSelectMethod={handlePayment}
       />
 
       <CashPaymentModal
         show={showCashModal}
-        total={calculateTotal()}
+        total={calculateFinalTotal()}
         onHide={() => setShowCashModal(false)}
         onConfirm={handleCashPayment}
       />
