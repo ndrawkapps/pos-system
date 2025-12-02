@@ -445,7 +445,7 @@ const Beranda = () => {
                             <div>
                               <h5 className="mb-0">{category.name}</h5>
                               <span className="badge bg-primary mt-1">
-                                {formatCurrency(category.total)}
+                                Total Kategori: {formatCurrency(category.total)}
                               </span>
                             </div>
                           </div>
