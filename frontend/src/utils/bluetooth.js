@@ -279,6 +279,28 @@ class BluetoothPrinter {
 
       receipt += "--------------------------------" + this.LINE_FEED;
 
+      // Subtotal (if discount exists)
+      if (orderData.discount_amount && orderData.discount_amount > 0) {
+        const subtotalLabel = "Subtotal";
+        const subtotalItems = orderData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const subtotalValue = Math.round(subtotalItems).toLocaleString("id-ID", { maximumFractionDigits: 0 });
+        const subtotalPadding = " ".repeat(
+          Math.max(0, 32 - subtotalLabel.length - subtotalValue.length)
+        );
+        receipt += subtotalLabel + subtotalPadding + subtotalValue + this.LINE_FEED;
+
+        // Discount
+        const discountLabel = orderData.discount_type === 'percentage' 
+          ? `Diskon (${orderData.discount_value}%)`
+          : "Diskon";
+        const discountValue = Math.round(orderData.discount_amount).toLocaleString("id-ID", { maximumFractionDigits: 0 });
+        const discountPadding = " ".repeat(
+          Math.max(0, 32 - discountLabel.length - discountValue.length - 2)
+        );
+        receipt += discountLabel + discountPadding + "- " + discountValue + this.LINE_FEED;
+        receipt += "--------------------------------" + this.LINE_FEED;
+      }
+
       // Total
       const totalLabel = "TOTAL";
       const totalValue = Math.round(orderData.total).toLocaleString("id-ID", { maximumFractionDigits: 0 });

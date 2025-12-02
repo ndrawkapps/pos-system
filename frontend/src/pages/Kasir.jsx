@@ -23,6 +23,8 @@ const Kasir = () => {
   const [orderType, setOrderType] = useState("Dine-In");
   const [tableNumber, setTableNumber] = useState("");
   const [transactionNote, setTransactionNote] = useState("");
+  const [discountType, setDiscountType] = useState("none");
+  const [discountValue, setDiscountValue] = useState("");
   const [shift, setShift] = useState(null);
   const [heldOrders, setHeldOrders] = useState([]);
   const [settings, setSettings] = useState({});
@@ -422,14 +424,19 @@ const Kasir = () => {
         payment_method: paymentMethod,
         paid_amount: paidAmount,
         transaction_note: transactionNote,
+        discount_type: discountType,
+        discount_value: parseFloat(discountValue) || 0,
       });
 
       const transactionData = {
         ...response.data.data,
-        id: response.data.data.transaction_id || response.data.data.id, // Use transaction_id from API response
+        id: response.data.data.transaction_id || response.data.data.id,
         items: cart,
         payment_method: paymentMethod,
         transaction_note: transactionNote,
+        discount_type: discountType,
+        discount_value: parseFloat(discountValue) || 0,
+        discount_amount: response.data.data.discount_amount || 0,
         created_at: new Date(),
       };
 
@@ -445,7 +452,8 @@ const Kasir = () => {
         alert(`Transaksi berhasil, tapi gagal print: ${printError.message}\n\nSilakan print ulang dari Riwayat.`);
       }
 
-      const changeAmount = paidAmount - calculateTotal();
+      const finalTotal = response.data.data.total || calculateTotal();
+      const changeAmount = paidAmount - finalTotal;
       if (paymentMethod === "Tunai") {
         alert(`Pembayaran Tunai berhasil!\nID Transaksi: #${transactionData.id}\nKembalian: ${formatCurrency(changeAmount)}`);
       } else {
@@ -467,6 +475,8 @@ const Kasir = () => {
     setTableNumber("");
     setOrderType("Dine-In");
     setTransactionNote("");
+    setDiscountType("none");
+    setDiscountValue("");
   };
 
   const filteredProducts = products.filter((product) => {
@@ -566,9 +576,13 @@ const Kasir = () => {
                   tableNumber={tableNumber}
                   transactionNote={transactionNote}
                   heldOrdersCount={heldOrders.length}
+                  discountType={discountType}
+                  discountValue={discountValue}
                   onOrderTypeChange={setOrderType}
                   onTableNumberChange={setTableNumber}
                   onTransactionNoteChange={setTransactionNote}
+                  onDiscountTypeChange={setDiscountType}
+                  onDiscountValueChange={setDiscountValue}
                   onUpdateQuantity={updateQuantity}
                   onUpdateNote={updateNote}
                   onSave={handleSaveOrder}

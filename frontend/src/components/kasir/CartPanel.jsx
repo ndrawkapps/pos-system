@@ -16,9 +16,13 @@ const CartPanel = ({
   tableNumber,
   transactionNote,
   heldOrdersCount,
+  discountType,
+  discountValue,
   onOrderTypeChange,
   onTableNumberChange,
   onTransactionNoteChange,
+  onDiscountTypeChange,
+  onDiscountValueChange,
   onUpdateQuantity,
   onUpdateNote,
   onSave,
@@ -29,6 +33,19 @@ const CartPanel = ({
   onShowHeld,
 }) => {
   const isEmpty = cart.length === 0;
+
+  // Calculate discount amount
+  const calculateDiscountAmount = () => {
+    if (discountType === 'percentage' && discountValue > 0) {
+      return (total * discountValue) / 100;
+    } else if (discountType === 'nominal' && discountValue > 0) {
+      return parseFloat(discountValue) || 0;
+    }
+    return 0;
+  };
+
+  const discountAmount = calculateDiscountAmount();
+  const finalTotal = total - discountAmount;
 
   const handleAddNote = (item) => {
     const note = prompt("Masukkan catatan:", item.note || "");
@@ -174,11 +191,53 @@ const CartPanel = ({
           zIndex: 10
         }}
       >
-        <div className="d-flex justify-content-between align-items-center mb-1 px-1">
-          <span className="small fw-bold">Total</span>
-          <span className="h6 mb-0 text-primary fw-bold">
-            {formatCurrency(total)}
-          </span>
+        <div className="mb-2 px-1">
+          <div className="d-flex justify-content-between align-items-center mb-1">
+            <span className="small">Subtotal</span>
+            <span className="small">{formatCurrency(total)}</span>
+          </div>
+          
+          {/* Discount Input */}
+          <div className="row g-1 mb-1">
+            <div className="col-5">
+              <Form.Select
+                size="sm"
+                value={discountType}
+                onChange={(e) => onDiscountTypeChange(e.target.value)}
+                disabled={isEmpty}
+                style={{ fontSize: '0.7rem' }}
+              >
+                <option value="none">Tanpa Diskon</option>
+                <option value="percentage">Diskon %</option>
+                <option value="nominal">Diskon Rp</option>
+              </Form.Select>
+            </div>
+            <div className="col-7">
+              <Form.Control
+                size="sm"
+                type="number"
+                placeholder="0"
+                value={discountValue}
+                onChange={(e) => onDiscountValueChange(e.target.value)}
+                disabled={isEmpty || discountType === 'none'}
+                style={{ fontSize: '0.7rem' }}
+              />
+            </div>
+          </div>
+
+          {discountAmount > 0 && (
+            <div className="d-flex justify-content-between align-items-center mb-1 text-danger">
+              <span className="small">Diskon {discountType === 'percentage' ? `(${discountValue}%)` : ''}</span>
+              <span className="small">- {formatCurrency(discountAmount)}</span>
+            </div>
+          )}
+
+          <div className="d-flex justify-content-between align-items-center mb-1 border-top pt-1">
+            <span className="fw-bold">Total</span>
+            <span className="h6 mb-0 text-primary fw-bold">
+              {formatCurrency(finalTotal)}
+            </span>
+          </div>
         </div>
 
         <div className="row g-1 mb-1">

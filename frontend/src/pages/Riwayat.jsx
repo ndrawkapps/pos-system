@@ -513,6 +513,7 @@ const Riwayat = () => {
                 <thead>
                   <tr>
                     <th>Produk</th>
+                    <th>Kategori</th>
                     <th className="text-center">Qty</th>
                     <th className="text-end">Harga</th>
                     <th className="text-end">Subtotal</th>
@@ -529,6 +530,11 @@ const Riwayat = () => {
                           </div>
                         )}
                       </td>
+                      <td>
+                        <span className="badge bg-secondary">
+                          {item.category_name || '-'}
+                        </span>
+                      </td>
                       <td className="text-center">{item.quantity}</td>
                       <td className="text-end">{formatCurrency(item.price)}</td>
                       <td className="text-end">
@@ -536,8 +542,26 @@ const Riwayat = () => {
                       </td>
                     </tr>
                   ))}
+                  <tr className="table-light">
+                    <td colSpan={4} className="text-end">
+                      Subtotal:
+                    </td>
+                    <td className="text-end">
+                      {formatCurrency(selectedTransaction.subtotal)}
+                    </td>
+                  </tr>
+                  {selectedTransaction.discount_amount > 0 && (
+                    <tr className="text-danger">
+                      <td colSpan={4} className="text-end">
+                        Diskon {selectedTransaction.discount_type === 'percentage' ? `(${selectedTransaction.discount_value}%)` : ''}:
+                      </td>
+                      <td className="text-end">
+                        - {formatCurrency(selectedTransaction.discount_amount)}
+                      </td>
+                    </tr>
+                  )}
                   <tr className="table-active">
-                    <td colSpan={3} className="text-end fw-bold">
+                    <td colSpan={4} className="text-end fw-bold">
                       Total:
                     </td>
                     <td className="text-end fw-bold">
@@ -545,7 +569,7 @@ const Riwayat = () => {
                     </td>
                   </tr>
                   <tr>
-                    <td colSpan={3} className="text-end">
+                    <td colSpan={4} className="text-end">
                       Bayar via {selectedTransaction.payment_method}:
                     </td>
                     <td className="text-end">
@@ -554,7 +578,7 @@ const Riwayat = () => {
                   </tr>
                   {selectedTransaction.payment_method === "Tunai" && (
                     <tr>
-                      <td colSpan={3} className="text-end">
+                      <td colSpan={4} className="text-end">
                         Kembalian:
                       </td>
                       <td className="text-end">

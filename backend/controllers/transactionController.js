@@ -12,7 +12,9 @@ exports.createTransaction = async (req, res) => {
       table_number,
       payment_method,
       paid_amount,
-      transaction_note
+      transaction_note,
+      discount_type = 'none',
+      discount_value = 0
     } = req.body;
     const user_id = req.user.id;
 
@@ -24,26 +26,38 @@ exports.createTransaction = async (req, res) => {
       });
     }
 
-    // Calculate totals
+    // Calculate subtotal
     let subtotal = 0;
     items.forEach(item => {
       subtotal += item.price * item.quantity;
     });
 
+    // Calculate discount amount
+    let discount_amount = 0;
+    if (discount_type === 'percentage' && discount_value > 0) {
+      discount_amount = (subtotal * discount_value) / 100;
+    } else if (discount_type === 'nominal' && discount_value > 0) {
+      discount_amount = discount_value;
+    }
+
+    // Calculate final total
+    const total = subtotal - discount_amount;
+
     const change_amount = payment_method === 'Tunai' && paid_amount 
-      ? paid_amount - subtotal 
+      ? paid_amount - total 
       : 0;
 
     // Insert transaction
     const [transactionResult] = await conn.query(
       `INSERT INTO transactions 
        (shift_id, user_id, order_type, table_number, payment_method, 
-        subtotal, total, paid_amount, change_amount, transaction_note, status) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'completed')`,
+        subtotal, discount_type, discount_value, discount_amount, total, 
+        paid_amount, change_amount, transaction_note, status) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'completed')`,
       [
         shift_id, user_id, order_type || 'Dine-In', table_number, 
-        payment_method, subtotal, subtotal, 
-        paid_amount || subtotal, change_amount, transaction_note
+        payment_method, subtotal, discount_type, discount_value, discount_amount, total, 
+        paid_amount || total, change_amount, transaction_note
       ]
     );
 
@@ -62,18 +76,18 @@ exports.createTransaction = async (req, res) => {
       );
     }
 
-    // Update shift totals
+    // Update shift totals (use final total after discount)
     if (payment_method === 'Tunai') {
       await conn.query(
         `UPDATE shifts 
          SET total_cash = total_cash + ?, expected_cash = expected_cash + ? 
          WHERE id = ?`,
-        [subtotal, subtotal, shift_id]
+        [total, total, shift_id]
       );
     } else {
       await conn.query(
         'UPDATE shifts SET total_non_cash = total_non_cash + ? WHERE id = ?',
-        [subtotal, shift_id]
+        [total, shift_id]
       );
     }
 
@@ -85,8 +99,11 @@ exports.createTransaction = async (req, res) => {
       data: {
         transaction_id,
         subtotal,
-        total: subtotal,
-        paid_amount: paid_amount || subtotal,
+        discount_type,
+        discount_value,
+        discount_amount,
+        total,
+        paid_amount: paid_amount || total,
         change_amount
       }
     });
@@ -165,9 +182,13 @@ exports.getTransactionDetail = async (req, res) => {
       });
     }
 
-    // Get transaction items
+    // Get transaction items with category info
     const [items] = await pool.query(
-      'SELECT * FROM transaction_items WHERE transaction_id = ?',
+      `SELECT ti.*, p.category_id, c.name as category_name
+       FROM transaction_items ti
+       LEFT JOIN products p ON ti.product_id = p.id
+       LEFT JOIN categories c ON p.category_id = c.id
+       WHERE ti.transaction_id = ?`,
       [id]
     );
 
