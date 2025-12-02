@@ -18,6 +18,20 @@ exports.createTransaction = async (req, res) => {
     } = req.body;
     const user_id = req.user.id;
 
+    // Debug logging
+    console.log('Create transaction request:', {
+      shift_id,
+      items_count: items?.length,
+      order_type,
+      payment_method,
+      discount_type,
+      discount_value
+    });
+    
+    if (items && items.length > 0) {
+      console.log('First item sample:', items[0]);
+    }
+
     if (!shift_id || !items || items.length === 0 || !payment_method) {
       await conn.rollback();
       return res.status(400).json({ 
@@ -141,7 +155,12 @@ exports.createTransaction = async (req, res) => {
   } catch (error) {
     await conn.rollback();
     console.error('Create transaction error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   } finally {
     conn.release();
   }
