@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Container,
   Row,
@@ -520,28 +520,61 @@ const Riwayat = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {selectedTransaction.items?.map((item, idx) => (
-                    <tr key={idx}>
-                      <td>
-                        {item.product_name}
-                        {item.item_note && (
-                          <div className="small text-muted">
-                            📝 {item.item_note}
-                          </div>
+                  {selectedTransaction.items?.map((item, idx) => {
+                    const itemSubtotal = item.price * item.quantity;
+                    let itemDiscountAmount = 0;
+                    if (item.discount_type === 'percentage' && item.discount_value > 0) {
+                      itemDiscountAmount = (itemSubtotal * item.discount_value) / 100;
+                    } else if (item.discount_type === 'nominal' && item.discount_value > 0) {
+                      itemDiscountAmount = parseFloat(item.discount_value) || 0;
+                    }
+                    const itemTotal = itemSubtotal - itemDiscountAmount;
+
+                    return (
+                      <React.Fragment key={idx}>
+                        <tr>
+                          <td>
+                            {item.product_name}
+                            {item.item_note && (
+                              <div className="small text-muted">
+                                📝 {item.item_note}
+                              </div>
+                            )}
+                          </td>
+                          <td>
+                            <span className="badge bg-secondary">
+                              {item.category_name || '-'}
+                            </span>
+                          </td>
+                          <td className="text-center">{item.quantity}</td>
+                          <td className="text-end">{formatCurrency(item.price)}</td>
+                          <td className="text-end">
+                            {formatCurrency(itemSubtotal)}
+                          </td>
+                        </tr>
+                        {itemDiscountAmount > 0 && (
+                          <tr className="table-warning">
+                            <td colSpan={4} className="text-end small">
+                              Item Diskon {item.discount_type === 'percentage' ? `(${item.discount_value}%)` : ''}:
+                            </td>
+                            <td className="text-end small text-danger">
+                              - {formatCurrency(itemDiscountAmount)}
+                            </td>
+                          </tr>
                         )}
-                      </td>
-                      <td>
-                        <span className="badge bg-secondary">
-                          {item.category_name || '-'}
-                        </span>
-                      </td>
-                      <td className="text-center">{item.quantity}</td>
-                      <td className="text-end">{formatCurrency(item.price)}</td>
-                      <td className="text-end">
-                        {formatCurrency(item.subtotal)}
-                      </td>
-                    </tr>
-                  ))}
+                        {itemDiscountAmount > 0 && (
+                          <tr className="table-light">
+                            <td colSpan={4} className="text-end small fw-bold">
+                              Total Item:
+                            </td>
+                            <td className="text-end small fw-bold">
+                              {formatCurrency(itemTotal)}
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
                   <tr className="table-light">
                     <td colSpan={4} className="text-end">
                       Subtotal:
@@ -553,7 +586,7 @@ const Riwayat = () => {
                   {selectedTransaction.discount_amount > 0 && (
                     <tr className="text-danger">
                       <td colSpan={4} className="text-end">
-                        Diskon {selectedTransaction.discount_type === 'percentage' ? `(${selectedTransaction.discount_value}%)` : ''}:
+                        Diskon Pesanan {selectedTransaction.discount_type === 'percentage' ? `(${selectedTransaction.discount_value}%)` : ''}:
                       </td>
                       <td className="text-end">
                         - {formatCurrency(selectedTransaction.discount_amount)}

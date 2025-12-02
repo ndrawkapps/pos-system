@@ -26,13 +26,24 @@ exports.createTransaction = async (req, res) => {
       });
     }
 
-    // Calculate subtotal
+    // Calculate subtotal with per-item discounts
     let subtotal = 0;
     items.forEach(item => {
-      subtotal += item.price * item.quantity;
+      const itemSubtotal = item.price * item.quantity;
+      
+      // Calculate per-item discount
+      let itemDiscountAmount = 0;
+      if (item.discount_type === 'percentage' && item.discount_value > 0) {
+        itemDiscountAmount = (itemSubtotal * item.discount_value) / 100;
+      } else if (item.discount_type === 'nominal' && item.discount_value > 0) {
+        itemDiscountAmount = item.discount_value;
+      }
+      
+      // Add to subtotal (after item discount)
+      subtotal += itemSubtotal - itemDiscountAmount;
     });
 
-    // Calculate discount amount
+    // Calculate order-level discount amount
     let discount_amount = 0;
     if (discount_type === 'percentage' && discount_value > 0) {
       discount_amount = (subtotal * discount_value) / 100;
@@ -40,7 +51,7 @@ exports.createTransaction = async (req, res) => {
       discount_amount = discount_value;
     }
 
-    // Calculate final total
+    // Calculate final total (subtotal already includes item discounts)
     const total = subtotal - discount_amount;
 
     const change_amount = payment_method === 'Tunai' && paid_amount 
@@ -63,15 +74,32 @@ exports.createTransaction = async (req, res) => {
 
     const transaction_id = transactionResult.insertId;
 
-    // Insert transaction items
+    // Insert transaction items with per-item discounts
     for (const item of items) {
+      const itemSubtotal = item.price * item.quantity;
+      
+      // Calculate per-item discount
+      let itemDiscountAmount = 0;
+      const itemDiscountType = item.discount_type || 'none';
+      const itemDiscountValue = item.discount_value || 0;
+      
+      if (itemDiscountType === 'percentage' && itemDiscountValue > 0) {
+        itemDiscountAmount = (itemSubtotal * itemDiscountValue) / 100;
+      } else if (itemDiscountType === 'nominal' && itemDiscountValue > 0) {
+        itemDiscountAmount = itemDiscountValue;
+      }
+      
+      const itemTotal = itemSubtotal - itemDiscountAmount;
+      
       await conn.query(
         `INSERT INTO transaction_items 
-         (transaction_id, product_id, product_name, price, quantity, subtotal, item_note) 
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+         (transaction_id, product_id, product_name, price, quantity, subtotal, 
+          discount_type, discount_value, discount_amount, total, item_note) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           transaction_id, item.id, item.name, item.price, 
-          item.quantity, item.price * item.quantity, item.note
+          item.quantity, itemSubtotal, itemDiscountType, itemDiscountValue, 
+          itemDiscountAmount, itemTotal, item.note
         ]
       );
     }

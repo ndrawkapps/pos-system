@@ -25,6 +25,7 @@ const CartPanel = ({
   onDiscountValueChange,
   onUpdateQuantity,
   onUpdateNote,
+  onUpdateItemDiscount,
   onSave,
   onPrintKitchen,
   onPrintCheck,
@@ -52,6 +53,30 @@ const CartPanel = ({
     if (note !== null) {
       onUpdateNote(item.cartItemId, note.trim());
     }
+  };
+
+  const handleItemDiscountTypeChange = (cartItemId, type) => {
+    onUpdateItemDiscount(cartItemId, type, type === 'none' ? '' : '0');
+  };
+
+  const handleItemDiscountValueChange = (cartItemId, value) => {
+    const item = cart.find(i => i.cartItemId === cartItemId);
+    if (item) {
+      onUpdateItemDiscount(cartItemId, item.discount_type || 'none', value);
+    }
+  };
+
+  const calculateItemTotal = (item) => {
+    const subtotal = item.price * item.quantity;
+    let discountAmount = 0;
+    
+    if (item.discount_type === 'percentage' && item.discount_value > 0) {
+      discountAmount = (subtotal * item.discount_value) / 100;
+    } else if (item.discount_type === 'nominal' && item.discount_value > 0) {
+      discountAmount = parseFloat(item.discount_value) || 0;
+    }
+    
+    return subtotal - discountAmount;
   };
 
   return (
@@ -121,63 +146,108 @@ const CartPanel = ({
               Keranjang masih kosong
             </div>
           ) : (
-            cart.map((item) => (
-            <div key={item.cartItemId} className="cart-item">
-              <div className="cart-item-info">
-                <div className="fw-bold">{item.name}</div>
-                <div className="text-muted small">
-                  {formatCurrency(item.price)}
-                </div>
-                {item.note ? (
-                  <div
-                    className="small text-primary mt-1 cursor-pointer"
-                    style={{
-                      cursor: "pointer",
-                      backgroundColor: "#f0f0f0",
-                      padding: "2px 6px",
-                      borderRadius: "4px",
-                    }}
-                    onClick={() => handleAddNote(item)}
-                  >
-                    📝 {item.note}
+            cart.map((item) => {
+              const itemSubtotal = item.price * item.quantity;
+              const itemTotal = calculateItemTotal(item);
+              const itemDiscountAmount = itemSubtotal - itemTotal;
+
+              return (
+            <div key={item.cartItemId} className="cart-item mb-3 border-bottom pb-2">
+              <div className="d-flex justify-content-between align-items-start mb-2">
+                <div className="cart-item-info flex-grow-1">
+                  <div className="fw-bold">{item.name}</div>
+                  <div className="text-muted small">
+                    {formatCurrency(item.price)} x {item.quantity}
                   </div>
-                ) : (
-                  <a
-                    href="#"
-                    className="small text-decoration-none"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleAddNote(item);
-                    }}
+                  {item.note ? (
+                    <div
+                      className="small text-primary mt-1 cursor-pointer"
+                      style={{
+                        cursor: "pointer",
+                        backgroundColor: "#f0f0f0",
+                        padding: "2px 6px",
+                        borderRadius: "4px",
+                      }}
+                      onClick={() => handleAddNote(item)}
+                    >
+                      📝 {item.note}
+                    </div>
+                  ) : (
+                    <a
+                      href="#"
+                      className="small text-decoration-none"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleAddNote(item);
+                      }}
+                    >
+                      + Catatan
+                    </a>
+                  )}
+                </div>
+
+                <div className="cart-item-controls d-flex align-items-center">
+                  <Button
+                    size="sm"
+                    variant="outline-secondary"
+                    onClick={() => onUpdateQuantity(item.cartItemId, -1)}
                   >
-                    + Catatan
-                  </a>
-                )}
+                    -
+                  </Button>
+                  <span className="mx-2 fw-bold">{item.quantity}</span>
+                  <Button
+                    size="sm"
+                    variant="outline-secondary"
+                    onClick={() => onUpdateQuantity(item.cartItemId, 1)}
+                  >
+                    +
+                  </Button>
+                </div>
               </div>
 
-              <div className="cart-item-controls">
-                <Button
-                  size="sm"
-                  variant="outline-secondary"
-                  onClick={() => onUpdateQuantity(item.cartItemId, -1)}
-                >
-                  -
-                </Button>
-                <span className="mx-2 fw-bold">{item.quantity}</span>
-                <Button
-                  size="sm"
-                  variant="outline-secondary"
-                  onClick={() => onUpdateQuantity(item.cartItemId, 1)}
-                >
-                  +
-                </Button>
+              {/* Per-item discount controls */}
+              <div className="row g-1 mb-1">
+                <div className="col-5">
+                  <Form.Select
+                    size="sm"
+                    value={item.discount_type || 'none'}
+                    onChange={(e) => handleItemDiscountTypeChange(item.cartItemId, e.target.value)}
+                    style={{ fontSize: '0.65rem' }}
+                  >
+                    <option value="none">Tanpa Diskon</option>
+                    <option value="percentage">Diskon %</option>
+                    <option value="nominal">Diskon Rp</option>
+                  </Form.Select>
+                </div>
+                <div className="col-7">
+                  <Form.Control
+                    size="sm"
+                    type="number"
+                    placeholder="0"
+                    value={item.discount_value || ''}
+                    onChange={(e) => handleItemDiscountValueChange(item.cartItemId, e.target.value)}
+                    disabled={!item.discount_type || item.discount_type === 'none'}
+                    style={{ fontSize: '0.65rem' }}
+                  />
+                </div>
               </div>
 
-              <div className="fw-bold text-end" style={{ minWidth: "80px" }}>
-                {formatCurrency(item.price * item.quantity)}
+              <div className="d-flex justify-content-between align-items-center">
+                <div>
+                  {itemDiscountAmount > 0 && (
+                    <div className="small text-danger">
+                      Diskon: - {formatCurrency(itemDiscountAmount)}
+                      {item.discount_type === 'percentage' && ` (${item.discount_value}%)`}
+                    </div>
+                  )}
+                </div>
+                <div className="fw-bold text-end" style={{ minWidth: "80px" }}>
+                  {formatCurrency(itemTotal)}
+                </div>
               </div>
             </div>
-          ))
+          );
+        })
         )}
         </div>
       </div>

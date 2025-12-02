@@ -214,8 +214,33 @@ const Kasir = () => {
     }
   };
 
+  const updateItemDiscount = (cartItemId, discountType, discountValue) => {
+    setCart(
+      cart.map((item) =>
+        item.cartItemId === cartItemId
+          ? {
+              ...item,
+              discount_type: discountType,
+              discount_value: discountValue,
+            }
+          : item
+      )
+    );
+  };
+
   const calculateTotal = () => {
-    return cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    return cart.reduce((sum, item) => {
+      const itemSubtotal = item.price * item.quantity;
+      let itemDiscountAmount = 0;
+      
+      if (item.discount_type === 'percentage' && item.discount_value > 0) {
+        itemDiscountAmount = (itemSubtotal * item.discount_value) / 100;
+      } else if (item.discount_type === 'nominal' && item.discount_value > 0) {
+        itemDiscountAmount = parseFloat(item.discount_value) || 0;
+      }
+      
+      return sum + (itemSubtotal - itemDiscountAmount);
+    }, 0);
   };
 
   const handleSaveOrder = async () => {
@@ -585,6 +610,7 @@ const Kasir = () => {
                   onDiscountValueChange={setDiscountValue}
                   onUpdateQuantity={updateQuantity}
                   onUpdateNote={updateNote}
+                  onUpdateItemDiscount={updateItemDiscount}
                   onSave={handleSaveOrder}
                   onPrintKitchen={handlePrintKitchen}
                   onPrintCheck={handlePrintCheck}

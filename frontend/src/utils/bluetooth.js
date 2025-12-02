@@ -257,7 +257,7 @@ class BluetoothPrinter {
 
       // Items
       orderData.items.forEach((item) => {
-        const subtotal = Math.round(item.price * item.quantity);
+        const itemSubtotal = Math.round(item.price * item.quantity);
         let itemName = item.product_name || item.name;
         if (itemName.length > 20) itemName = itemName.substring(0, 20);
 
@@ -267,14 +267,44 @@ class BluetoothPrinter {
           receipt += "  >> " + item.item_note + this.LINE_FEED;
         }
 
+        // Calculate item discount if present
+        let itemDiscountAmount = 0;
+        if (item.discount_type === 'percentage' && item.discount_value > 0) {
+          itemDiscountAmount = Math.round((itemSubtotal * item.discount_value) / 100);
+        } else if (item.discount_type === 'nominal' && item.discount_value > 0) {
+          itemDiscountAmount = Math.round(item.discount_value);
+        }
+
+        const itemTotal = itemSubtotal - itemDiscountAmount;
+
         const priceLine = `${item.quantity} x ${Math.round(item.price).toLocaleString(
           "id-ID", { maximumFractionDigits: 0 }
         )}`;
-        const subtotalStr = subtotal.toLocaleString("id-ID", { maximumFractionDigits: 0 });
+        const subtotalStr = itemSubtotal.toLocaleString("id-ID", { maximumFractionDigits: 0 });
         const padding = " ".repeat(
           Math.max(0, 32 - priceLine.length - subtotalStr.length)
         );
         receipt += priceLine + padding + subtotalStr + this.LINE_FEED;
+
+        // Show item discount if present
+        if (itemDiscountAmount > 0) {
+          const itemDiscLabel = item.discount_type === 'percentage'
+            ? `  Disc (${item.discount_value}%)`
+            : "  Disc";
+          const itemDiscValue = itemDiscountAmount.toLocaleString("id-ID", { maximumFractionDigits: 0 });
+          const itemDiscPadding = " ".repeat(
+            Math.max(0, 32 - itemDiscLabel.length - itemDiscValue.length - 2)
+          );
+          receipt += itemDiscLabel + itemDiscPadding + "- " + itemDiscValue + this.LINE_FEED;
+          
+          // Show item total after discount
+          const itemTotalLabel = "  Total";
+          const itemTotalValue = itemTotal.toLocaleString("id-ID", { maximumFractionDigits: 0 });
+          const itemTotalPadding = " ".repeat(
+            Math.max(0, 32 - itemTotalLabel.length - itemTotalValue.length)
+          );
+          receipt += itemTotalLabel + itemTotalPadding + itemTotalValue + this.LINE_FEED;
+        }
       });
 
       receipt += "--------------------------------" + this.LINE_FEED;
