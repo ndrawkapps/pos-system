@@ -102,15 +102,15 @@ exports.getCategoryStats = async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
 
-    let dateFilter = "t.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
+    let dateCondition = "t.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
     const queryParams = [];
 
     if (startDate && endDate) {
-      dateFilter = "DATE(t.created_at) BETWEEN ? AND ?";
+      dateCondition = "DATE(t.created_at) BETWEEN ? AND ?";
       queryParams.push(startDate, endDate);
     }
 
-    // Get all categories with active products
+    // Get all categories with their total sales
     const [categories] = await pool.query(
       `SELECT 
         c.id,
@@ -119,9 +119,8 @@ exports.getCategoryStats = async (req, res) => {
       FROM categories c
       LEFT JOIN products p ON c.id = p.category_id AND p.is_active = 1
       LEFT JOIN transaction_items ti ON p.id = ti.product_id
-      LEFT JOIN transactions t ON ti.transaction_id = t.id 
-        AND t.status = 'completed'
-        AND ${dateFilter}
+      LEFT JOIN transactions t ON ti.transaction_id = t.id
+      WHERE (t.id IS NULL OR (t.status = 'completed' AND ${dateCondition}))
       GROUP BY c.id, c.name
       ORDER BY total DESC`,
       queryParams
@@ -142,11 +141,12 @@ exports.getCategoryStats = async (req, res) => {
             COALESCE(SUM(ti.subtotal), 0) as revenue
           FROM products p
           LEFT JOIN transaction_items ti ON p.id = ti.product_id
-          LEFT JOIN transactions t ON ti.transaction_id = t.id 
-            AND t.status = 'completed'
-            AND ${dateFilter}
-          WHERE p.category_id = ? AND p.is_active = 1
+          LEFT JOIN transactions t ON ti.transaction_id = t.id
+          WHERE p.category_id = ? 
+            AND p.is_active = 1
+            AND (t.id IS NULL OR (t.status = 'completed' AND ${dateCondition}))
           GROUP BY p.id, p.name
+          HAVING sold > 0
           ORDER BY sold DESC
           LIMIT 5`,
           topProductsParams
