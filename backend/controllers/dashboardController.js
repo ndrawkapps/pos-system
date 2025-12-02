@@ -120,6 +120,7 @@ exports.getCategoryStats = async (req, res) => {
       LEFT JOIN products p ON c.id = p.category_id AND p.is_active = 1
       LEFT JOIN transaction_items ti ON p.id = ti.product_id
       LEFT JOIN transactions t ON ti.transaction_id = t.id 
+        AND t.status = 'completed'
         AND ${dateFilter}
       GROUP BY c.id, c.name
       ORDER BY total DESC`,
@@ -142,6 +143,7 @@ exports.getCategoryStats = async (req, res) => {
           FROM products p
           LEFT JOIN transaction_items ti ON p.id = ti.product_id
           LEFT JOIN transactions t ON ti.transaction_id = t.id 
+            AND t.status = 'completed'
             AND ${dateFilter}
           WHERE p.category_id = ? AND p.is_active = 1
           GROUP BY p.id, p.name
