@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Table, Modal, Form, Badge, Alert, InputGroup } from 'react-bootstrap';
 import { FaUtensils, FaPlus, FaTrash, FaSave } from 'react-icons/fa';
-import { getProducts } from '../services/productService';
+import productService from '../services/productService';
 import { getIngredients, getProductRecipe, setProductRecipe } from '../services/inventoryService';
 
 function Recipes() {
@@ -21,7 +21,7 @@ function Recipes() {
 
   const fetchProducts = async () => {
     try {
-      const response = await getProducts();
+      const response = await productService.getAll();
       setProducts(response.data);
     } catch (err) {
       console.error('Error fetching products:', err);
