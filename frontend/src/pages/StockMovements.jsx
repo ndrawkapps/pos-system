@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Table, Form, Badge, Alert, Button } from 'react-bootstrap';
 import { FaHistory, FaFilter, FaArrowUp, FaArrowDown, FaAdjust } from 'react-icons/fa';
 import { getStockMovements, getIngredients } from '../services/inventoryService';
-import { formatDate } from '../utils/formaters';
+import { formatDate } from '../utils/formatters';
 
 function StockMovements() {
   const [movements, setMovements] = useState([]);
