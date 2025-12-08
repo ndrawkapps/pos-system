@@ -14,11 +14,13 @@ import {
   FiChevronLeft,
   FiChevronRight,
   FiX,
+  FiPackage,
 } from "react-icons/fi";
+import { FaFlask, FaHistory } from "react-icons/fa";
 import { useState, useEffect } from "react";
 
 const Sidebar = () => {
-  const { hasPermission } = useAuth();
+  const { hasPermission, isAdmin } = useAuth();
   const [collapsed, setCollapsed] = useState(() => {
     try {
       return localStorage.getItem('sidebarCollapsed') === 'true';
@@ -77,6 +79,35 @@ const Sidebar = () => {
       icon: <FiGrid />,
       permission: "all",
     },
+    // Inventory Management (Admin Only)
+    {
+      path: "/ingredients",
+      label: "Bahan Baku",
+      icon: <FiPackage />,
+      permission: "all",
+      adminOnly: true,
+    },
+    {
+      path: "/recipes",
+      label: "Resep Produk",
+      icon: <FaFlask />,
+      permission: "all",
+      adminOnly: true,
+    },
+    {
+      path: "/stock-movements",
+      label: "Riwayat Stok",
+      icon: <FaHistory />,
+      permission: "all",
+      adminOnly: true,
+    },
+    {
+      path: "/migration-runner",
+      label: "Run Migration",
+      icon: <FiGrid />,
+      permission: "all",
+      adminOnly: true,
+    },
     { path: "/users", label: "User", icon: <FiUsers />, permission: "all" },
     { path: "/roles", label: "Role", icon: <FiShield />, permission: "all" },
     {
@@ -121,7 +152,8 @@ const Sidebar = () => {
       <Nav className="flex-column p-3">
         {menuItems.map(
           (item) =>
-            hasPermission(item.permission) && (
+            hasPermission(item.permission) &&
+            (!item.adminOnly || isAdmin()) && (
               <NavLink
                 key={item.path}
                 to={item.path}

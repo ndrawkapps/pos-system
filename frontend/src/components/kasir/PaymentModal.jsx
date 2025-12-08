@@ -7,6 +7,7 @@ const PaymentModal = ({ show, total, onHide, onSelectMethod }) => {
     { value: "QRIS", label: "📱 QRIS", variant: "primary" },
     { value: "Online Order", label: "🛒 Online Order", variant: "info" },
     { value: "Pink99", label: "🎀 Pink99", variant: "danger" },
+    { value: "Car Wash", label: "🚗 Car Wash", variant: "dark" },
     { value: "Kedai", label: "🏪 Kedai", variant: "warning" },
     { value: "Bpk/Ibu", label: "👔 Bpk/Ibu", variant: "secondary" },
   ];

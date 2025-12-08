@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Container, Row, Col, Alert, Modal, Button } from "react-bootstrap";
 import Navbar from "../components/common/Navbar";
 import Sidebar from "../components/common/Sidebar";
@@ -31,10 +31,12 @@ const Kasir = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showCart, setShowCart] = useState(false); // For mobile toggle
+  const saveOrderInProgress = useRef(false); // Prevent double save
 
   // Modal states
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showCashModal, setShowCashModal] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("Tunai");
   const [showHeldModal, setShowHeldModal] = useState(false);
   const [showShiftModal, setShowShiftModal] = useState(false);
   const [shiftModalRequired, setShiftModalRequired] = useState(false);
@@ -263,6 +265,14 @@ const Kasir = () => {
     
     if (!checkShiftRequired()) return;
 
+    // Prevent double save with debounce
+    if (saveOrderInProgress.current) {
+      console.log('Save already in progress, ignoring duplicate request');
+      return;
+    }
+
+    saveOrderInProgress.current = true;
+
     try {
       await transactionService.saveHeldOrder({
         shift_id: shift.id,
@@ -279,6 +289,11 @@ const Kasir = () => {
     } catch (error) {
       console.error("Save order error:", error);
       alert("Gagal menyimpan pesanan");
+    } finally {
+      // Reset flag after 1 second to allow next save
+      setTimeout(() => {
+        saveOrderInProgress.current = false;
+      }, 1000);
     }
   };
 
@@ -414,17 +429,19 @@ const Kasir = () => {
     if (!checkShiftRequired()) return;
     
     setShowPaymentModal(false);
+    setSelectedPaymentMethod(paymentMethod);
 
-    if (paymentMethod === "Tunai") {
+    // Methods that need cash input modal
+    if (paymentMethod === "Tunai" || paymentMethod === "Pink99" || paymentMethod === "Car Wash") {
       setShowCashModal(true);
     } else {
-      processPayment(paymentMethod, calculateTotal());
+      processPayment(paymentMethod, calculateFinalTotal());
     }
   };
 
   const handleCashPayment = (paidAmount) => {
     setShowCashModal(false);
-    processPayment("Tunai", paidAmount);
+    processPayment(selectedPaymentMethod, paidAmount);
   };
 
   const processPayment = async (paymentMethod, paidAmount) => {
@@ -663,6 +680,7 @@ const Kasir = () => {
       <CashPaymentModal
         show={showCashModal}
         total={calculateFinalTotal()}
+        paymentMethod={selectedPaymentMethod}
         onHide={() => setShowCashModal(false)}
         onConfirm={handleCashPayment}
       />

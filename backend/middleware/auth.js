@@ -103,3 +103,17 @@ exports.authorize = (...permissions) => {
     next();
   };
 };
+
+// Middleware to check if user is admin (role_id = 1)
+exports.adminOnly = (req, res, next) => {
+  if (req.user.role_id !== 1) {
+    return res.status(403).json({
+      success: false,
+      message: "Access denied. Admin only."
+    });
+  }
+  next();
+};
+
+// Alias for authenticate
+exports.protect = exports.authenticate;

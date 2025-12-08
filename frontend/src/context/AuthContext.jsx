@@ -107,12 +107,17 @@ export const AuthProvider = ({ children }) => {
     [user]
   );
 
+  const isAdmin = useCallback(() => {
+    return user && user.role_id === 1;
+  }, [user]);
+
   const value = {
     user,
     login,
     logout,
     loading,
     hasPermission,
+    isAdmin,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

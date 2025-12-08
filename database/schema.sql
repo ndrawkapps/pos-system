@@ -67,7 +67,7 @@ CREATE TABLE transactions (
   user_id INT NOT NULL,
   order_type ENUM('Dine-In', 'Take Away', 'GoFood', 'GrabFood', 'ShopeeFood') NOT NULL,
   table_number VARCHAR(50),
-  payment_method ENUM('Tunai', 'QRIS', 'Online Order', 'Pink99', 'Kedai', 'Bpk/Ibu') NOT NULL,
+  payment_method ENUM('Tunai', 'QRIS', 'Online Order', 'Pink99', 'Car Wash', 'Kedai', 'Bpk/Ibu') NOT NULL,
   subtotal DECIMAL(10,2) NOT NULL,
   discount_type ENUM('percentage', 'nominal', 'none') DEFAULT 'none',
   discount_value DECIMAL(10,2) DEFAULT 0,

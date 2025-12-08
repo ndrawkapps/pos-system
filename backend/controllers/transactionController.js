@@ -40,6 +40,47 @@ exports.createTransaction = async (req, res) => {
       });
     }
 
+    // ============ STOCK CHECK & PREPARATION ============
+    const stockDeductions = []; // Track what needs to be deducted
+    
+    for (const item of items) {
+      // Check if product has recipe
+      const [recipes] = await conn.query(
+        `SELECT pr.ingredient_id, pr.quantity_needed, i.name as ingredient_name, 
+                i.current_stock, i.unit
+         FROM product_recipes pr
+         JOIN ingredients i ON pr.ingredient_id = i.id
+         WHERE pr.product_id = ? AND i.is_active = 1`,
+        [item.id]
+      );
+      
+      // If product has recipe, check stock availability
+      if (recipes.length > 0) {
+        for (const recipe of recipes) {
+          const needed = recipe.quantity_needed * item.quantity;
+          const available = parseFloat(recipe.current_stock);
+          
+          if (available < needed) {
+            await conn.rollback();
+            return res.status(400).json({
+              success: false,
+              message: `Stok tidak cukup untuk ${item.name}. Bahan ${recipe.ingredient_name} hanya tersisa ${available} ${recipe.unit}, dibutuhkan ${needed} ${recipe.unit}`
+            });
+          }
+          
+          // Track for deduction
+          stockDeductions.push({
+            ingredient_id: recipe.ingredient_id,
+            ingredient_name: recipe.ingredient_name,
+            quantity: needed,
+            stock_before: available,
+            unit: recipe.unit
+          });
+        }
+      }
+      // If no recipe, product can be sold without stock check (backward compatible)
+    }
+
     // Calculate subtotal with per-item discounts
     let subtotal = 0;
     items.forEach(item => {
@@ -117,6 +158,34 @@ exports.createTransaction = async (req, res) => {
           transaction_id, item.id, item.name, item.price, 
           item.quantity, itemSubtotal, itemDiscountType, itemDiscountValue, 
           itemDiscountAmount, itemTotal, item.note || null
+        ]
+      );
+    }
+
+    // ============ DEDUCT STOCK & LOG MOVEMENTS ============
+    for (const deduction of stockDeductions) {
+      const stock_after = deduction.stock_before - deduction.quantity;
+      
+      // Update ingredient stock
+      await conn.query(
+        'UPDATE ingredients SET current_stock = ? WHERE id = ?',
+        [stock_after, deduction.ingredient_id]
+      );
+      
+      // Log stock movement
+      await conn.query(
+        `INSERT INTO stock_movements 
+         (ingredient_id, movement_type, quantity, stock_before, stock_after, 
+          reference_type, reference_id, notes, created_by)
+         VALUES (?, 'out', ?, ?, ?, 'transaction', ?, ?, ?)`,
+        [
+          deduction.ingredient_id,
+          deduction.quantity,
+          deduction.stock_before,
+          stock_after,
+          transaction_id,
+          `Transaksi #${transaction_id}`,
+          user_id
         ]
       );
     }
@@ -267,13 +336,34 @@ exports.saveHeldOrder = async (req, res) => {
       });
     }
 
+    // Check for duplicate held order in last 3 seconds (prevent double click)
+    const itemsJson = JSON.stringify(items);
+    const [recentOrders] = await pool.query(
+      `SELECT id FROM held_orders 
+       WHERE shift_id = ? 
+       AND user_id = ? 
+       AND items = ? 
+       AND created_at > DATE_SUB(NOW(), INTERVAL 3 SECOND)
+       LIMIT 1`,
+      [shift_id, user_id, itemsJson]
+    );
+
+    if (recentOrders.length > 0) {
+      console.log('Duplicate held order detected, ignoring');
+      return res.status(200).json({
+        success: true,
+        message: 'Order already saved',
+        data: { id: recentOrders[0].id, isDuplicate: true }
+      });
+    }
+
     const [result] = await pool.query(
       `INSERT INTO held_orders 
        (shift_id, user_id, order_type, table_number, items, total, transaction_note) 
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [
         shift_id, user_id, order_type, table_number, 
-        JSON.stringify(items), total, transaction_note
+        itemsJson, total, transaction_note
       ]
     );
 

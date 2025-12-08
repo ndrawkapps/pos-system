@@ -17,6 +17,10 @@ import Categories from "./pages/Categories";
 import Users from "./pages/Users";
 import Roles from "./pages/Roles";
 import Settings from "./pages/Settings";
+import Ingredients from "./pages/Ingredients";
+import Recipes from "./pages/Recipes";
+import StockMovements from "./pages/StockMovements";
+import MigrationRunner from "./pages/MigrationRunner";
 
 function App() {
   return (
@@ -102,6 +106,38 @@ function App() {
             element={
               <ProtectedRoute permissions={["all"]}>
                 <Settings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/ingredients"
+            element={
+              <ProtectedRoute permissions={["all"]}>
+                <Ingredients />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/recipes"
+            element={
+              <ProtectedRoute permissions={["all"]}>
+                <Recipes />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/stock-movements"
+            element={
+              <ProtectedRoute permissions={["all"]}>
+                <StockMovements />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/migration-runner"
+            element={
+              <ProtectedRoute permissions={["all"]}>
+                <MigrationRunner />
               </ProtectedRoute>
             }
           />

@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { Modal, Button, Form, Row, Col } from "react-bootstrap";
 import { formatCurrency } from "../../utils/formatters";
 
-const CashPaymentModal = ({ show, total, onHide, onConfirm }) => {
+const CashPaymentModal = ({ show, total, onHide, onConfirm, paymentMethod = "Tunai" }) => {
   const [paidAmount, setPaidAmount] = useState("");
 
   const NOMINALS = [
@@ -64,7 +64,7 @@ const CashPaymentModal = ({ show, total, onHide, onConfirm }) => {
   return (
     <Modal show={show} onHide={handleHide} centered>
       <Modal.Header closeButton>
-        <Modal.Title>Pembayaran Tunai</Modal.Title>
+        <Modal.Title>Pembayaran {paymentMethod}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <div className="bg-primary text-white p-3 rounded mb-3">
