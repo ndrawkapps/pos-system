@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Table, Modal, Form, Badge, Alert } from 'react-bootstrap';
 import { FaPlus, FaEdit, FaTrash, FaBoxes, FaExclamationTriangle } from 'react-icons/fa';
+import Navbar from '../components/common/Navbar';
+import Sidebar from '../components/common/Sidebar';
 import {
   getIngredients,
   createIngredient,
@@ -153,29 +155,35 @@ function Ingredients() {
   };
 
   return (
-    <Container fluid className="py-4">
-      <Row className="mb-4">
-        <Col>
-          <h2 className="fw-bold">Manajemen Bahan Baku</h2>
-          <p className="text-muted">Kelola stok bahan baku untuk resep produk</p>
-        </Col>
-        <Col xs="auto">
-          <Button variant="primary" onClick={() => handleShowModal()}>
-            <FaPlus className="me-2" />
-            Tambah Bahan Baku
-          </Button>
-        </Col>
-      </Row>
+    <div className="app-container">
+      <div className="d-flex flex-column w-100">
+        <Navbar />
+        <div className="d-flex flex-1">
+          <Sidebar />
+          <div className="content-wrapper">
+            <Container fluid className="py-4">
+              <Row className="mb-4">
+                <Col>
+                  <h2 className="fw-bold">Manajemen Bahan Baku</h2>
+                  <p className="text-muted">Kelola stok bahan baku untuk resep produk</p>
+                </Col>
+                <Col xs="auto">
+                  <Button variant="primary" onClick={() => handleShowModal()}>
+                    <FaPlus className="me-2" />
+                    Tambah Bahan Baku
+                  </Button>
+                </Col>
+              </Row>
 
-      {error && (
-        <Alert variant="danger" dismissible onClose={() => setError(null)}>
-          {error}
-        </Alert>
-      )}
+              {error && (
+                <Alert variant="danger" dismissible onClose={() => setError(null)}>
+                  {error}
+                </Alert>
+              )}
 
-      {getLowStockCount() > 0 && (
-        <Alert variant="warning">
-          <FaExclamationTriangle className="me-2" />
+              {getLowStockCount() > 0 && (
+                <Alert variant="warning">
+                  <FaExclamationTriangle className="me-2" />
           <strong>{getLowStockCount()} bahan baku</strong> memiliki stok di bawah minimum!
         </Alert>
       )}
@@ -421,7 +429,11 @@ function Ingredients() {
           </Modal.Footer>
         </Form>
       </Modal>
-    </Container>
+            </Container>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 

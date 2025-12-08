@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Table, Form, Badge, Alert, Button } from 'react-bootstrap';
 import { FaHistory, FaFilter, FaArrowUp, FaArrowDown, FaAdjust } from 'react-icons/fa';
+import Navbar from '../components/common/Navbar';
+import Sidebar from '../components/common/Sidebar';
 import { getStockMovements, getIngredients } from '../services/inventoryService';
 import { formatDate } from '../utils/formatters';
 
@@ -127,25 +129,31 @@ function StockMovements() {
   };
 
   return (
-    <Container fluid className="py-4">
-      <Row className="mb-4">
-        <Col>
-          <h2 className="fw-bold">
-            <FaHistory className="me-2" />
-            Riwayat Pergerakan Stok
-          </h2>
-          <p className="text-muted">Pantau semua perubahan stok bahan baku</p>
-        </Col>
-      </Row>
+    <div className="app-container">
+      <div className="d-flex flex-column w-100">
+        <Navbar />
+        <div className="d-flex flex-1">
+          <Sidebar />
+          <div className="content-wrapper">
+            <Container fluid className="py-4">
+              <Row className="mb-4">
+                <Col>
+                  <h2 className="fw-bold">
+                    <FaHistory className="me-2" />
+                    Riwayat Pergerakan Stok
+                  </h2>
+                  <p className="text-muted">Pantau semua perubahan stok bahan baku</p>
+                </Col>
+              </Row>
 
-      {error && (
-        <Alert variant="danger" dismissible onClose={() => setError(null)}>
-          {error}
-        </Alert>
-      )}
+              {error && (
+                <Alert variant="danger" dismissible onClose={() => setError(null)}>
+                  {error}
+                </Alert>
+              )}
 
-      {/* Filter Card */}
-      <Card className="mb-3">
+              {/* Filter Card */}
+              <Card className="mb-3">
         <Card.Body>
           <h6 className="fw-bold mb-3">
             <FaFilter className="me-2" />
@@ -298,7 +306,11 @@ function StockMovements() {
           )}
         </Card.Body>
       </Card>
-    </Container>
+            </Container>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 

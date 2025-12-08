@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Table, Modal, Form, Badge, Alert, InputGroup } from 'react-bootstrap';
 import { FaUtensils, FaPlus, FaTrash, FaSave } from 'react-icons/fa';
+import Navbar from '../components/common/Navbar';
+import Sidebar from '../components/common/Sidebar';
 import productService from '../services/productService';
 import { getIngredients, getProductRecipe, setProductRecipe } from '../services/inventoryService';
 
@@ -145,22 +147,28 @@ function Recipes() {
   };
 
   return (
-    <Container fluid className="py-4">
-      <Row className="mb-4">
-        <Col>
-          <h2 className="fw-bold">Manajemen Resep Produk</h2>
-          <p className="text-muted">Atur komposisi bahan baku untuk setiap produk</p>
-        </Col>
-      </Row>
+    <div className="app-container">
+      <div className="d-flex flex-column w-100">
+        <Navbar />
+        <div className="d-flex flex-1">
+          <Sidebar />
+          <div className="content-wrapper">
+            <Container fluid className="py-4">
+              <Row className="mb-4">
+                <Col>
+                  <h2 className="fw-bold">Manajemen Resep Produk</h2>
+                  <p className="text-muted">Atur komposisi bahan baku untuk setiap produk</p>
+                </Col>
+              </Row>
 
-      {error && !showModal && (
-        <Alert variant="danger" dismissible onClose={() => setError(null)}>
-          {error}
-        </Alert>
-      )}
+              {error && !showModal && (
+                <Alert variant="danger" dismissible onClose={() => setError(null)}>
+                  {error}
+                </Alert>
+              )}
 
-      <Card>
-        <Card.Body>
+              <Card>
+                <Card.Body>
           <Table responsive hover>
             <thead>
               <tr>
@@ -369,7 +377,11 @@ function Recipes() {
           </Modal.Footer>
         </Form>
       </Modal>
-    </Container>
+            </Container>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
