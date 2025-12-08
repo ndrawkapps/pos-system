@@ -1,6 +1,57 @@
 const pool = require('../config/database');
-const fs = require('fs').promises;
-const path = require('path');
+
+// Hardcoded migrations for production reliability
+const MIGRATIONS = {
+  'add_car_wash_payment_method': `
+    ALTER TABLE transactions 
+    MODIFY COLUMN payment_method ENUM('Tunai', 'Kedai', 'Pink99', 'Car Wash') NOT NULL;
+  `,
+  
+  'create_inventory_system': `
+    CREATE TABLE IF NOT EXISTS ingredients (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      name VARCHAR(255) NOT NULL,
+      unit VARCHAR(50) NOT NULL,
+      current_stock DECIMAL(10,3) DEFAULT 0,
+      min_stock DECIMAL(10,3) DEFAULT 0,
+      cost_per_unit DECIMAL(10,2) DEFAULT 0,
+      is_active TINYINT(1) DEFAULT 1,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX idx_ingredient_stock (id, current_stock),
+      INDEX idx_active_ingredients (is_active, name)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    
+    CREATE TABLE IF NOT EXISTS product_recipes (
+      product_id INT NOT NULL,
+      ingredient_id INT NOT NULL,
+      quantity_needed DECIMAL(10,3) NOT NULL,
+      PRIMARY KEY (product_id, ingredient_id),
+      FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+      FOREIGN KEY (ingredient_id) REFERENCES ingredients(id) ON DELETE CASCADE,
+      INDEX idx_product_recipes (product_id),
+      INDEX idx_ingredient_usage (ingredient_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    
+    CREATE TABLE IF NOT EXISTS stock_movements (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      ingredient_id INT NOT NULL,
+      movement_type ENUM('in', 'out', 'adjustment') NOT NULL,
+      quantity DECIMAL(10,3) NOT NULL,
+      stock_before DECIMAL(10,3) NOT NULL,
+      stock_after DECIMAL(10,3) NOT NULL,
+      reference_type ENUM('transaction', 'purchase', 'adjustment', 'waste') NOT NULL,
+      reference_id INT NULL,
+      notes TEXT NULL,
+      created_by INT NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (ingredient_id) REFERENCES ingredients(id) ON DELETE CASCADE,
+      FOREIGN KEY (created_by) REFERENCES users(id),
+      INDEX idx_ingredient_movements (ingredient_id, created_at),
+      INDEX idx_reference (reference_type, reference_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `
+};
 
 exports.runMigration = async (req, res) => {
   const conn = await pool.getConnection();
@@ -14,10 +65,17 @@ exports.runMigration = async (req, res) => {
       });
     }
 
-    const migrationPath = path.join(__dirname, '../..', 'database', 'migrations', `${migration_name}.sql`);
+    const sql = MIGRATIONS[migration_name];
     
-    // Read SQL file
-    const sql = await fs.readFile(migrationPath, 'utf8');
+    if (!sql) {
+      return res.status(404).json({
+        success: false,
+        message: `Migration not found: ${migration_name}`,
+        available: Object.keys(MIGRATIONS)
+      });
+    }
+    
+    console.log(`Running migration: ${migration_name}`);
     
     // Split by semicolon and filter out empty statements
     const statements = sql
