@@ -3,6 +3,12 @@ const pool = require('../config/database');
 // Hardcoded migrations for production reliability
 const MIGRATIONS = {
   'add_car_wash_payment_method': `
+    -- First, check and update any invalid payment methods
+    UPDATE transactions 
+    SET payment_method = 'Tunai' 
+    WHERE payment_method NOT IN ('Tunai', 'Kedai', 'Pink99');
+    
+    -- Then modify the column to add Car Wash
     ALTER TABLE transactions 
     MODIFY COLUMN payment_method ENUM('Tunai', 'Kedai', 'Pink99', 'Car Wash') NOT NULL;
   `,
