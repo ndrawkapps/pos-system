@@ -101,13 +101,6 @@ const Sidebar = () => {
       permission: "all",
       adminOnly: true,
     },
-    {
-      path: "/migration-runner",
-      label: "Run Migration",
-      icon: <FiGrid />,
-      permission: "all",
-      adminOnly: true,
-    },
     { path: "/users", label: "User", icon: <FiUsers />, permission: "all" },
     { path: "/roles", label: "Role", icon: <FiShield />, permission: "all" },
     {

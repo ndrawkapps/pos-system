@@ -20,7 +20,6 @@ import Settings from "./pages/Settings";
 import Ingredients from "./pages/Ingredients";
 import Recipes from "./pages/Recipes";
 import StockMovements from "./pages/StockMovements";
-import MigrationRunner from "./pages/MigrationRunner";
 
 function App() {
   return (
@@ -130,14 +129,6 @@ function App() {
             element={
               <ProtectedRoute permissions={["all"]}>
                 <StockMovements />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/migration-runner"
-            element={
-              <ProtectedRoute permissions={["all"]}>
-                <MigrationRunner />
               </ProtectedRoute>
             }
           />
