@@ -41,11 +41,12 @@ function Ingredients() {
     try {
       setLoading(true);
       const response = await getIngredients();
-      setIngredients(response.data);
+      setIngredients(Array.isArray(response.data) ? response.data : []);
       setError(null);
     } catch (err) {
       setError('Gagal memuat data bahan baku');
       console.error(err);
+      setIngredients([]);
     } finally {
       setLoading(false);
     }

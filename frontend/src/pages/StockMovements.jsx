@@ -25,9 +25,10 @@ function StockMovements() {
   const fetchIngredients = async () => {
     try {
       const response = await getIngredients();
-      setIngredients(response.data);
+      setIngredients(Array.isArray(response.data) ? response.data : []);
     } catch (err) {
       console.error('Error fetching ingredients:', err);
+      setIngredients([]);
     }
   };
 
@@ -41,11 +42,12 @@ function StockMovements() {
       if (appliedFilters.movement_type) cleanFilters.movement_type = appliedFilters.movement_type;
       
       const response = await getStockMovements(cleanFilters);
-      setMovements(response.data);
+      setMovements(Array.isArray(response.data) ? response.data : []);
       setError(null);
     } catch (err) {
       setError('Gagal memuat riwayat pergerakan stok');
       console.error(err);
+      setMovements([]);
     } finally {
       setLoading(false);
     }

@@ -22,18 +22,20 @@ function Recipes() {
   const fetchProducts = async () => {
     try {
       const response = await productService.getAll();
-      setProducts(response.data);
+      setProducts(Array.isArray(response.data) ? response.data : []);
     } catch (err) {
       console.error('Error fetching products:', err);
+      setProducts([]);
     }
   };
 
   const fetchIngredients = async () => {
     try {
       const response = await getIngredients(true); // Only active ingredients
-      setIngredients(response.data);
+      setIngredients(Array.isArray(response.data) ? response.data : []);
     } catch (err) {
       console.error('Error fetching ingredients:', err);
+      setIngredients([]);
     }
   };
 
@@ -42,8 +44,10 @@ function Recipes() {
     setLoading(true);
     try {
       const response = await getProductRecipe(product.id);
-      if (response.data.length > 0) {
-        setRecipes(response.data.map(r => ({
+      const recipeData = Array.isArray(response.data) ? response.data : [];
+      
+      if (recipeData.length > 0) {
+        setRecipes(recipeData.map(r => ({
           ingredient_id: r.ingredient_id,
           ingredient_name: r.ingredient_name,
           unit: r.unit,
@@ -59,6 +63,7 @@ function Recipes() {
     } catch (err) {
       setError('Gagal memuat resep produk');
       console.error(err);
+      setRecipes([{ ingredient_id: '', quantity_needed: 0 }]);
     } finally {
       setLoading(false);
     }
