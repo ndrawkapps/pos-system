@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../config/database');
-const { authenticate, adminOnly } = require('../middleware/auth');
+const auth = require('../middleware/auth');
 
 // Migration SQL - Create Inventory System
 const MIGRATION_SQL = `
@@ -55,7 +55,7 @@ CREATE INDEX IF NOT EXISTS idx_ingredients_active ON ingredients(is_active);
 `;
 
 // Admin-only endpoint to run migration
-router.post('/run-inventory-migration', authenticate, adminOnly, async (req, res) => {
+router.post('/run-inventory-migration', auth.authenticate, auth.adminOnly, async (req, res) => {
   const conn = await pool.getConnection();
   
   try {
