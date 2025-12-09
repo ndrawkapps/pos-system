@@ -10,7 +10,7 @@ exports.createTransaction = async (req, res) => {
       items,
       order_type,
       table_number,
-      payment_method,
+      payment_method: rawPaymentMethod,
       paid_amount,
       transaction_note,
       discount_type = 'none',
@@ -18,12 +18,18 @@ exports.createTransaction = async (req, res) => {
     } = req.body;
     const user_id = req.user.id;
 
+    // Clean and validate payment_method
+    const payment_method = rawPaymentMethod ? String(rawPaymentMethod).trim() : null;
+    const validPaymentMethods = ['Tunai', 'QRIS', 'Online Order', 'Pink99', 'Car Wash', 'Kedai', 'Bpk/Ibu'];
+    
     // Debug logging
     console.log('Create transaction request:', {
       shift_id,
       items_count: items?.length,
       order_type,
       payment_method,
+      payment_method_raw: rawPaymentMethod,
+      payment_method_length: payment_method?.length,
       discount_type,
       discount_value
     });
@@ -37,6 +43,15 @@ exports.createTransaction = async (req, res) => {
       return res.status(400).json({ 
         success: false, 
         message: 'Missing required fields' 
+      });
+    }
+
+    // Validate payment method
+    if (!validPaymentMethods.includes(payment_method)) {
+      await conn.rollback();
+      return res.status(400).json({
+        success: false,
+        message: `Invalid payment method: "${payment_method}". Must be one of: ${validPaymentMethods.join(', ')}`
       });
     }
 
