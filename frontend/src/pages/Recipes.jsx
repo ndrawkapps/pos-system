@@ -28,12 +28,18 @@ function Recipes() {
       console.log('Products data:', response.data);
       console.log('Is array:', Array.isArray(response.data));
       
+      // Handle both response formats: direct array or nested in data property
+      let productsData = [];
       if (response && response.data) {
-        setProducts(Array.isArray(response.data) ? response.data : []);
-      } else {
-        console.warn('No data in response:', response);
-        setProducts([]);
+        if (Array.isArray(response.data)) {
+          productsData = response.data;
+        } else if (response.data.data && Array.isArray(response.data.data)) {
+          productsData = response.data.data;
+        }
       }
+      
+      setProducts(productsData);
+      console.log('Products set:', productsData.length, 'items');
     } catch (err) {
       console.error('Error fetching products:', err);
       console.error('Error details:', err.response);
