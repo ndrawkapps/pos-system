@@ -24,9 +24,20 @@ function Recipes() {
   const fetchProducts = async () => {
     try {
       const response = await productService.getAll();
-      setProducts(Array.isArray(response.data) ? response.data : []);
+      console.log('Products API response:', response);
+      console.log('Products data:', response.data);
+      console.log('Is array:', Array.isArray(response.data));
+      
+      if (response && response.data) {
+        setProducts(Array.isArray(response.data) ? response.data : []);
+      } else {
+        console.warn('No data in response:', response);
+        setProducts([]);
+      }
     } catch (err) {
       console.error('Error fetching products:', err);
+      console.error('Error details:', err.response);
+      setError('Gagal memuat data produk');
       setProducts([]);
     }
   };
@@ -167,7 +178,20 @@ function Recipes() {
                 </Alert>
               )}
 
+              {loading && !showModal && (
+                <Alert variant="info">
+                  Memuat data produk...
+                </Alert>
+              )}
+
               <Card>
+                <Card.Header className="bg-white">
+                  <h5 className="mb-1">Daftar Produk</h5>
+                  <small className="text-muted">
+                    Total {products.length} produk
+                    {products.length === 0 && ' - Silakan tambah produk terlebih dahulu di menu Produk'}
+                  </small>
+                </Card.Header>
                 <Card.Body>
           <Table responsive hover>
             <thead>
