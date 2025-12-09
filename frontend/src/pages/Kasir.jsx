@@ -534,10 +534,16 @@ const Kasir = () => {
       resetOrder();
     } catch (error) {
       console.error("Payment error:", error);
-      alert(
-        "Gagal memproses pembayaran: " +
-          (error.response?.data?.message || error.message)
-      );
+      console.error("Error response:", error.response);
+      console.error("Error response data:", error.response?.data);
+      console.error("Error message:", error.message);
+      
+      const errorMessage = error.response?.data?.message 
+        || error.response?.data?.sqlMessage
+        || error.message 
+        || "Unknown error";
+      
+      alert("Gagal memproses pembayaran: " + errorMessage);
     }
   };
 
