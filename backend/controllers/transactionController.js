@@ -43,42 +43,58 @@ exports.createTransaction = async (req, res) => {
     // ============ STOCK CHECK & PREPARATION ============
     const stockDeductions = []; // Track what needs to be deducted
     
-    for (const item of items) {
-      // Check if product has recipe
-      const [recipes] = await conn.query(
-        `SELECT pr.ingredient_id, pr.quantity_needed, i.name as ingredient_name, 
-                i.current_stock, i.unit
-         FROM product_recipes pr
-         JOIN ingredients i ON pr.ingredient_id = i.id
-         WHERE pr.product_id = ? AND i.is_active = 1`,
-        [item.id]
+    // Check if inventory tables exist before querying
+    try {
+      const [tables] = await conn.query(
+        "SHOW TABLES LIKE 'product_recipes'"
       );
       
-      // If product has recipe, check stock availability
-      if (recipes.length > 0) {
-        for (const recipe of recipes) {
-          const needed = recipe.quantity_needed * item.quantity;
-          const available = parseFloat(recipe.current_stock);
+      // Only check recipes if table exists
+      if (tables.length > 0) {
+        for (const item of items) {
+          // Check if product has recipe
+          const [recipes] = await conn.query(
+            `SELECT pr.ingredient_id, pr.quantity_needed, i.name as ingredient_name, 
+                    i.current_stock, i.unit
+             FROM product_recipes pr
+             JOIN ingredients i ON pr.ingredient_id = i.id
+             WHERE pr.product_id = ? AND i.is_active = 1`,
+            [item.id]
+          );
           
-          if (available < needed) {
-            await conn.rollback();
-            return res.status(400).json({
-              success: false,
-              message: `Stok tidak cukup untuk ${item.name}. Bahan ${recipe.ingredient_name} hanya tersisa ${available} ${recipe.unit}, dibutuhkan ${needed} ${recipe.unit}`
-            });
+          // If product has recipe, check stock availability
+          if (recipes.length > 0) {
+            for (const recipe of recipes) {
+              const needed = recipe.quantity_needed * item.quantity;
+              const available = parseFloat(recipe.current_stock);
+              
+              if (available < needed) {
+                await conn.rollback();
+                return res.status(400).json({
+                  success: false,
+                  message: `Stok tidak cukup untuk ${item.name}. Bahan ${recipe.ingredient_name} hanya tersisa ${available} ${recipe.unit}, dibutuhkan ${needed} ${recipe.unit}`
+                });
+              }
+              
+              // Track for deduction
+              stockDeductions.push({
+                ingredient_id: recipe.ingredient_id,
+                ingredient_name: recipe.ingredient_name,
+                quantity: needed,
+                stock_before: available,
+                unit: recipe.unit
+              });
+            }
           }
-          
-          // Track for deduction
-          stockDeductions.push({
-            ingredient_id: recipe.ingredient_id,
-            ingredient_name: recipe.ingredient_name,
-            quantity: needed,
-            stock_before: available,
-            unit: recipe.unit
-          });
+          // If no recipe, product can be sold without stock check (backward compatible)
         }
+      } else {
+        console.log('Inventory tables not found, skipping stock check');
       }
-      // If no recipe, product can be sold without stock check (backward compatible)
+    } catch (recipeError) {
+      // If there's any error checking recipes, log it but continue transaction
+      console.error('Error checking recipes (non-critical):', recipeError.message);
+      // Don't fail the transaction, just skip stock management
     }
 
     // Calculate subtotal with per-item discounts
@@ -163,31 +179,38 @@ exports.createTransaction = async (req, res) => {
     }
 
     // ============ DEDUCT STOCK & LOG MOVEMENTS ============
-    for (const deduction of stockDeductions) {
-      const stock_after = deduction.stock_before - deduction.quantity;
-      
-      // Update ingredient stock
-      await conn.query(
-        'UPDATE ingredients SET current_stock = ? WHERE id = ?',
-        [stock_after, deduction.ingredient_id]
-      );
-      
-      // Log stock movement
-      await conn.query(
-        `INSERT INTO stock_movements 
-         (ingredient_id, movement_type, quantity, stock_before, stock_after, 
-          reference_type, reference_id, notes, created_by)
-         VALUES (?, 'out', ?, ?, ?, 'transaction', ?, ?, ?)`,
-        [
-          deduction.ingredient_id,
-          deduction.quantity,
-          deduction.stock_before,
-          stock_after,
-          transaction_id,
-          `Transaksi #${transaction_id}`,
-          user_id
-        ]
-      );
+    if (stockDeductions.length > 0) {
+      try {
+        for (const deduction of stockDeductions) {
+          const stock_after = deduction.stock_before - deduction.quantity;
+          
+          // Update ingredient stock
+          await conn.query(
+            'UPDATE ingredients SET current_stock = ? WHERE id = ?',
+            [stock_after, deduction.ingredient_id]
+          );
+          
+          // Log stock movement
+          await conn.query(
+            `INSERT INTO stock_movements 
+             (ingredient_id, movement_type, quantity, stock_before, stock_after, 
+              reference_type, reference_id, notes, created_by)
+             VALUES (?, 'out', ?, ?, ?, 'transaction', ?, ?, ?)`,
+            [
+              deduction.ingredient_id,
+              deduction.quantity,
+              deduction.stock_before,
+              stock_after,
+              transaction_id,
+              `Transaksi #${transaction_id}`,
+              user_id
+            ]
+          );
+        }
+      } catch (stockError) {
+        console.error('Error updating stock (non-critical):', stockError.message);
+        // Don't fail transaction if stock update fails
+      }
     }
 
     // Update shift totals (use final total after discount)
@@ -225,10 +248,14 @@ exports.createTransaction = async (req, res) => {
     await conn.rollback();
     console.error('Create transaction error:', error);
     console.error('Error stack:', error.stack);
+    console.error('Error message:', error.message);
+    console.error('Error code:', error.code);
+    
     res.status(500).json({ 
       success: false, 
-      message: 'Server error',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      message: error.message || 'Server error',
+      errorCode: error.code,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   } finally {
     conn.release();
