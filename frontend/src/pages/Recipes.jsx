@@ -252,8 +252,8 @@ function Recipes() {
                     <td>{product.category_name}</td>
                     <td className="text-end">Rp {parseInt(product.price).toLocaleString('id-ID')}</td>
                     <td className="text-center">
-                      <Badge bg={product.is_available ? 'success' : 'secondary'}>
-                        {product.is_available ? 'Tersedia' : 'Tidak Tersedia'}
+                      <Badge bg={product.is_active ? 'success' : 'secondary'}>
+                        {product.is_active ? 'Tersedia' : 'Tidak Tersedia'}
                       </Badge>
                     </td>
                     <td className="text-center">
