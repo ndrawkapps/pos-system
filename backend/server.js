@@ -105,21 +105,7 @@ console.log("📊 Database Config:", {
   database: process.env.DB_NAME,
 });
 
-runMigrations()
-  .then(() => {
-    app.listen(PORT, () => {
-      console.log(`✅ Server started successfully on port ${PORT}`);
-      console.log(`🌐 Access at: http://localhost:${PORT}`);
-    });
-  })
-  .catch((error) => {
-    console.error("❌ Migration failed:", error);
-    console.log(
-      "⚠️  Starting server anyway (manual migration may be needed)..."
-    );
-
-    // Start server anyway for debugging
-    app.listen(PORT, () => {
-      console.log(`⚠️  Server started on port ${PORT} (with migration errors)`);
-    });
-  });
+app.listen(PORT, () => {
+  console.log(`✅ Server started successfully on port ${PORT}`);
+  console.log(`🌐 Access at: http://localhost:${PORT}`);
+});
