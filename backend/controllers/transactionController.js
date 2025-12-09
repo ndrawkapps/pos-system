@@ -180,9 +180,17 @@ exports.createTransaction = async (req, res) => {
 
     // ============ DEDUCT STOCK & LOG MOVEMENTS ============
     if (stockDeductions.length > 0) {
+      console.log(`Processing ${stockDeductions.length} stock deductions`);
       try {
         for (const deduction of stockDeductions) {
           const stock_after = deduction.stock_before - deduction.quantity;
+          
+          console.log('Deducting stock:', {
+            ingredient_id: deduction.ingredient_id,
+            quantity: deduction.quantity,
+            stock_before: deduction.stock_before,
+            stock_after
+          });
           
           // Update ingredient stock
           await conn.query(
@@ -207,10 +215,20 @@ exports.createTransaction = async (req, res) => {
             ]
           );
         }
+        console.log('Stock deductions completed successfully');
       } catch (stockError) {
-        console.error('Error updating stock (non-critical):', stockError.message);
-        // Don't fail transaction if stock update fails
+        console.error('Error updating stock:', stockError);
+        console.error('Stock error details:', {
+          message: stockError.message,
+          code: stockError.code,
+          sqlMessage: stockError.sqlMessage,
+          sql: stockError.sql
+        });
+        // IMPORTANT: Rethrow the error to rollback the transaction
+        throw stockError;
       }
+    } else {
+      console.log('No stock deductions needed (no recipes configured)');
     }
 
     // Update shift totals (use final total after discount)
@@ -246,16 +264,35 @@ exports.createTransaction = async (req, res) => {
     });
   } catch (error) {
     await conn.rollback();
-    console.error('Create transaction error:', error);
-    console.error('Error stack:', error.stack);
-    console.error('Error message:', error.message);
-    console.error('Error code:', error.code);
+    console.error('============ CREATE TRANSACTION ERROR ============');
+    console.error('Error:', error);
+    console.error('Stack:', error.stack);
+    console.error('Message:', error.message);
+    console.error('Code:', error.code);
+    console.error('SQL Message:', error.sqlMessage);
+    console.error('SQL:', error.sql);
+    console.error('================================================');
+    
+    // Provide more specific error messages
+    let errorMessage = 'Server error';
+    if (error.code === 'ER_NO_REFERENCED_ROW_2') {
+      errorMessage = 'Foreign key constraint failed - invalid reference';
+    } else if (error.code === 'ER_DUP_ENTRY') {
+      errorMessage = 'Duplicate entry error';
+    } else if (error.sqlMessage) {
+      errorMessage = error.sqlMessage;
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
     
     res.status(500).json({ 
       success: false, 
-      message: error.message || 'Server error',
+      message: errorMessage,
       errorCode: error.code,
-      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      details: process.env.NODE_ENV === 'development' ? {
+        stack: error.stack,
+        sql: error.sql
+      } : undefined
     });
   } finally {
     conn.release();
