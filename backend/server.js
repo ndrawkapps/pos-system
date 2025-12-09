@@ -62,6 +62,7 @@ app.use("/api/transactions", require("./routes/transactions"));
 app.use("/api/dashboard", require("./routes/dashboard"));
 app.use("/api/inventory", require("./routes/inventory"));
 app.use("/api/diagnostics", require("./routes/diagnostics"));
+app.use("/api/quickfix", require("./routes/quickfix"));
 
 // Health check endpoints
 app.get("/", (req, res) => {
