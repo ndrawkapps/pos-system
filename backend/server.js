@@ -63,6 +63,7 @@ app.use("/api/shifts", require("./routes/shifts"));
 app.use("/api/transactions", require("./routes/transactions"));
 app.use("/api/dashboard", require("./routes/dashboard"));
 app.use("/api/inventory", require("./routes/inventory"));
+app.use("/api/migrate", require("./routes/migrate"));
 
 // Health check endpoints
 app.get("/", (req, res) => {
