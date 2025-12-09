@@ -334,13 +334,13 @@ function Recipes() {
                       <td>
                         <Form.Control
                           type="number"
-                          step="0.1"
-                          min="0.1"
+                          step="1"
+                          min="1"
                           value={recipe.quantity_needed}
                           onChange={(e) => handleRecipeChange(index, 'quantity_needed', e.target.value)}
                           required
                           className="text-end"
-                          placeholder="0.0"
+                          placeholder="0"
                         />
                       </td>
                       <td>
